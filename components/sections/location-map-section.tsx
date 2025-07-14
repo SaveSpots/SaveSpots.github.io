@@ -2,13 +2,19 @@
 
 import { motion } from "framer-motion";
 import { AnimatedSection } from "@/components/shared/animated-section";
-import ChicagoNarcanMap from "@/components/sections/chicago-narcan-map";
+import dynamic from "next/dynamic";
 
 const fadeInUp = {
   initial: { opacity: 0, y: 60 },
   animate: { opacity: 1, y: 0 },
   transition: { duration: 0.6, ease: "easeOut" },
 };
+
+const ChicagoNarcanMap = dynamic(
+  () => import("@/components/sections/chicago-narcan-map"),
+  { ssr: false }
+);
+
 
 export function LocationMapSection() {
   return (
