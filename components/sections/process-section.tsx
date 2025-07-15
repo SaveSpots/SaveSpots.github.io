@@ -1,16 +1,40 @@
-"use client"
+"use client";
 
-import { motion } from "framer-motion"
-import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { ArrowUp } from "lucide-react"
-import { AnimatedSection } from "@/components/shared/animated-section"
+import { motion } from "framer-motion";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { ArrowUp } from "lucide-react";
+import { AnimatedSection } from "@/components/shared/animated-section";
+
+const steps = [
+  {
+    number: "01",
+    title: "Analyze",
+    description:
+      "We start with a thorough analysis of your current workflows to see how AI could improve your business.",
+    visual: "grid",
+  },
+  {
+    number: "02",
+    title: "Build & Implement",
+    description:
+      "Our developers will start crafting custom AI-solutions for your company, continuously prioritising quality and safety.",
+    visual: "code",
+  },
+  {
+    number: "03",
+    title: "Maintain & Improve",
+    description:
+      "After deployment, our team will keep working hard by providing support and continuously improving the implemented solutions.",
+    visual: "metrics",
+  },
+];
 
 const fadeInUp = {
   initial: { opacity: 0, y: 60 },
   animate: { opacity: 1, y: 0 },
   transition: { duration: 0.6, ease: "easeOut" },
-}
+};
 
 const staggerContainer = {
   animate: {
@@ -18,7 +42,7 @@ const staggerContainer = {
       staggerChildren: 0.1,
     },
   },
-}
+};
 
 export function ProcessSection() {
   return (
@@ -42,29 +66,7 @@ export function ProcessSection() {
             whileInView="animate"
             viewport={{ once: true }}
           >
-            {[
-              {
-                number: "01",
-                title: "Analyze",
-                description:
-                  "We start with a thorough analysis of your current workflows to see how AI could improve your business.",
-                visual: "grid",
-              },
-              {
-                number: "02",
-                title: "Build & Implement",
-                description:
-                  "Our developers will start crafting custom AI-solutions for your company, continuously prioritising quality and safety.",
-                visual: "code",
-              },
-              {
-                number: "03",
-                title: "Maintain & improve",
-                description:
-                  "After deployment, our team will keep working hard by providing support and continuously improving the implemented solutions.",
-                visual: "metrics",
-              },
-            ].map((step, index) => (
+            {steps.map((step, index) => (
               <motion.div
                 key={index}
                 variants={fadeInUp}
@@ -107,9 +109,15 @@ export function ProcessSection() {
                             >
                               <div>{'<html lang="en">'}</div>
                               <div>{"<head>"}</div>
-                              <div className="ml-4">{'<meta charset="UTF-8">'}</div>
-                              <div className="ml-4">{'<meta name="viewport"'}</div>
-                              <div className="ml-8">{'content="width=device-width, initial-'}</div>
+                              <div className="ml-4">
+                                {'<meta charset="UTF-8">'}
+                              </div>
+                              <div className="ml-4">
+                                {'<meta name="viewport"'}
+                              </div>
+                              <div className="ml-8">
+                                {'content="width=device-width, initial-'}
+                              </div>
                             </motion.div>
                           </div>
                         )}
@@ -128,8 +136,12 @@ export function ProcessSection() {
                                 viewport={{ once: true }}
                                 transition={{ delay: i * 0.2 }}
                               >
-                                <span className="text-sm text-white/90 font-medium">{metric.label}</span>
-                                <span className="text-sm text-white font-semibold">{metric.value}</span>
+                                <span className="text-sm text-white/90 font-medium">
+                                  {metric.label}
+                                </span>
+                                <span className="text-sm text-white font-semibold">
+                                  {metric.value}
+                                </span>
                               </motion.div>
                             ))}
                             <motion.div
@@ -139,8 +151,13 @@ export function ProcessSection() {
                               viewport={{ once: true }}
                               transition={{ delay: 0.8 }}
                             >
-                              <span className="text-sm text-white/90 font-medium">Update available</span>
-                              <Button size="sm" className="bg-white text-theme-red text-xs font-semibold">
+                              <span className="text-sm text-white/90 font-medium">
+                                Update available
+                              </span>
+                              <Button
+                                size="sm"
+                                className="bg-white text-theme-red text-xs font-semibold"
+                              >
                                 Update <ArrowUp className="w-3 h-3 ml-1" />
                               </Button>
                             </motion.div>
@@ -148,8 +165,13 @@ export function ProcessSection() {
                         )}
                       </div>
                     </div>
-                    <div className="text-4xl font-bold text-white/50 mb-4">{step.number}</div>
-                    <h3 className="text-2xl font-semibold mb-4 text-white" data-cursor="text">
+                    <div className="text-4xl font-bold text-white/50 mb-4">
+                      {step.number}
+                    </div>
+                    <h3
+                      className="text-2xl font-semibold mb-4 text-white"
+                      data-cursor="text"
+                    >
                       {step.title}
                     </h3>
                     <p className="text-white/90 font-medium" data-cursor="text">
@@ -163,5 +185,5 @@ export function ProcessSection() {
         </div>
       </AnimatedSection>
     </section>
-  )
+  );
 }

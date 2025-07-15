@@ -9,7 +9,6 @@ export function InfiniteLogoCarousel() {
     { name: "Uber", style: "font-bold text-2xl" },
     { name: "NASA", style: "font-bold text-2xl" },
     { name: "Klarna", style: "font-bold text-2xl" },
-    { name: "SPOPO", style: "font-bold text-2xl" },
   ]
 
   const duplicatedLogos = [...logos, ...logos, ...logos]
