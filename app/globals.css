@@ -4,7 +4,7 @@
 
 @layer base {
   :root {
-    --background: 6 70% 63%; /* Primary Red (#e16c5f) */
+    --background: #5a2532; /* Primary Red (#5a2532) */
     --foreground: 0 0% 100%; /* White */
     --card: 0 0% 100%; /* White */
     --card-foreground: 0 0% 0%; /* Black for text on white cards */
@@ -40,5 +40,4 @@
 body {
   color: hsl(var(--foreground));
   background: hsl(var(--background));
-  /* Removed cursor-none to keep default mouse pointer */
 }
