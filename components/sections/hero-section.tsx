@@ -1,11 +1,11 @@
 "use client";
 
 import { motion, useScroll, useTransform } from "framer-motion";
-import { ArrowRight } from "lucide-react";
 import { DynamicBackground } from "@/components/layout/dynamic-background";
 import { HeaderTransition } from "@/components/layout/header-transition";
 import { ConsistentButton } from "@/components/shared/consistent-button";
 import { InfiniteLogoCarousel } from "@/components/shared/infinite-logo-carousel";
+import Link from "next/link";
 
 interface HeroSectionProps {
   isLoading: boolean;
@@ -75,13 +75,16 @@ export function HeroSection({ isLoading }: HeroSectionProps) {
             Our Services
           </ConsistentButton>
 
-          <ConsistentButton
-            variant="primary"
-            onClick={() => scrollToSection("contact")}
-            aria-label="Scroll to our contact us section"
-          >
-            Contact us <ArrowRight className="w-4 h-4" />
-          </ConsistentButton>
+          <Link href="https://savespots.fillout.com/volunteer" target="_blank">
+            <ConsistentButton variant="primary">
+              Volunteer With Us
+            </ConsistentButton>
+          </Link>
+          <Link href="https://savespots.fillout.com/savebox" target="_blank">
+            <ConsistentButton variant="primary">
+              Host a SaveBox at Your Location
+            </ConsistentButton>
+          </Link>
         </motion.div>
         <motion.div
           className="text-center"

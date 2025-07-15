@@ -4,6 +4,7 @@ import { motion } from "framer-motion"
 import { AnimatedSection } from "@/components/shared/animated-section"
 import { ConsistentButton } from "@/components/shared/consistent-button"
 import { ContactForm } from "@/components/contact-form"
+import Link from "next/link";
 
 const fadeInUp = {
   initial: { opacity: 0, y: 60 },
@@ -36,7 +37,8 @@ export function ContactSection() {
               transition={{ delay: 0.2 }}
               data-cursor="text"
             >
-              Reach out to us for collaborations, inquiries, or to learn more about our AI solutions.
+              Reach out to us for collaborations, inquiries, or to learn more
+              about our AI solutions.
             </motion.p>
             <motion.div
               className="flex flex-col gap-4 max-w-xs mx-auto md:mx-0"
@@ -46,12 +48,24 @@ export function ContactSection() {
               viewport={{ once: true }}
               transition={{ delay: 0.4 }}
             >
-              <ConsistentButton variant="primary" className="w-full">
-                Volunteer With Us
-              </ConsistentButton>
-              <ConsistentButton variant="secondary" className="w-full">
-                Put a Box in Your Location
-              </ConsistentButton>
+              <Link
+                href="https://savespots.fillout.com/volunteer"
+                className="w-full"
+                target="_blank"
+              >
+                <ConsistentButton variant="primary" className="w-full">
+                  Volunteer With Us
+                </ConsistentButton>
+              </Link>
+              <Link
+                href="https://savespots.fillout.com/savebox"
+                className="w-full"
+                target="_blank"
+              >
+                <ConsistentButton variant="secondary" className="w-full">
+                  Host a SaveBox at Your Location
+                </ConsistentButton>
+              </Link>
             </motion.div>
           </div>
           <div>
@@ -61,11 +75,12 @@ export function ContactSection() {
               whileInView="animate"
               viewport={{ once: true }}
               transition={{ delay: 0.8 }}
-            ><ContactForm /></motion.div>
-            
+            >
+              <ContactForm />
+            </motion.div>
           </div>
         </div>
       </AnimatedSection>
     </section>
-  )
+  );
 }
