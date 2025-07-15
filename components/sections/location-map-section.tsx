@@ -18,7 +18,7 @@ const ChicagoNarcanMap = dynamic(
 
 export function LocationMapSection() {
   return (
-    <section id="map" className="py-20 px-4 bg-theme-red-light">
+    <section id="location" className="py-20 px-4 bg-theme-red-light">
       <AnimatedSection>
         <div className="max-w-6xl mx-auto">
           <motion.h2
