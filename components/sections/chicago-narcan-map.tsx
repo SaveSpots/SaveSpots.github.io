@@ -51,20 +51,12 @@ type NarcanLocation = {
 
 const narcanLocations: NarcanLocation[] = [
   {
-    name: "Community Health Center",
-    lat: 41.8827,
-    lng: -87.6233,
-    address: "123 W Randolph St",
-    hours: "Mon-Fri 9am-5pm",
-    notes: "Available at front desk",
-  },
-  {
-    name: "Downtown Pharmacy",
-    lat: 41.881,
-    lng: -87.627,
-    address: "456 N State St",
-    hours: "24/7",
-    notes: "Call ahead for availability",
+    name: "Devon Pharmacy",
+    address: "2753 W Devon Ave, Chicago, IL 60659",
+    lat: 41.9973846,
+    lng: -87.6993298,
+    hours: "Mon-Fri 9am-8pm",
+    notes: "Ring bell for pickup",
   },
 ];
 
@@ -72,7 +64,7 @@ export default function ChicagoNarcanMap() {
   return (
     <MapContainer
       center={[41.8781, -87.6298]}
-      zoom={13}
+      zoom={10}
       scrollWheelZoom={true} // better UX for mobile
       className="w-full h-[400px] md:h-[500px] rounded-lg overflow-hidden shadow-lg z-0"
     >
@@ -90,10 +82,12 @@ export default function ChicagoNarcanMap() {
               <p className="text-xs">Hours: {loc.hours}</p>
               {loc.notes && <p className="italic text-xs">{loc.notes}</p>}
               <a
-                href={`https://www.google.com/maps/search/?api=1&query=${loc.lat},${loc.lng}`}
+                href={`https://www.google.com/maps/place/${encodeURIComponent(
+                  loc.address
+                )}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                >
+              >
                 Open in Google Maps
               </a>
             </div>
