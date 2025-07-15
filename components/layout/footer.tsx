@@ -4,10 +4,26 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 
 export function Footer() {
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
+  const navItems = [
+    { id: "hero", label: "Home" },
+    { id: "services", label: "Services" },
+    { id: "process", label: "Process" },
+    { id: "location", label: "Locations" },
+    { id: "contact", label: "Contact" },
+  ];
+
   return (
     <footer className="border-t border-white/20 py-12 px-4 bg-theme-red-dark">
       <div className="max-w-6xl mx-auto">
         <div className="grid md:grid-cols-3 gap-8">
+          {/* Logo */}
           <motion.div>
             <div
               className="flex items-center space-x-2 mb-8"
@@ -25,6 +41,7 @@ export function Footer() {
             </div>
           </motion.div>
 
+          {/* Socials */}
           <div>
             <h4
               className="text-lg font-semibold mb-4 text-white"
@@ -42,6 +59,7 @@ export function Footer() {
             </motion.a>
           </div>
 
+          {/* Links */}
           <div>
             <h4
               className="text-lg font-semibold mb-4 text-white"
@@ -50,23 +68,16 @@ export function Footer() {
               Links
             </h4>
             <div className="space-y-2">
-              {[
-                "Services",
-                "Process",
-                "FAQ",
-                "Contact",
-                "Terms & conditions",
-                "Privacy policy",
-              ].map((link, index) => (
-                <motion.div key={index} whileHover={{ scale: 1.05, x: 5 }}>
-                  <a
-                    href="#"
-                    className="text-white/90 hover:text-white transition-colors block font-medium"
-                    data-cursor="button"
-                  >
-                    {link}
-                  </a>
-                </motion.div>
+              {navItems.map(({ id, label }) => (
+                <motion.button
+                  key={id}
+                  onClick={() => scrollToSection(id)}
+                  whileHover={{ scale: 1.05, x: 5 }}
+                  className="text-left text-white/90 hover:text-white transition-colors block font-medium"
+                  data-cursor="button"
+                >
+                  {label}
+                </motion.button>
               ))}
             </div>
           </div>
@@ -74,7 +85,7 @@ export function Footer() {
 
         <div className="border-t border-white/20 mt-12 pt-8">
           <p className="flex text-white/80 text-md font-medium justify-center">
-            © 2025 SaveSpots - All rights reserved.
+            &copy; {new Date().getFullYear()} SaveSpots — All rights reserved.
           </p>
         </div>
       </div>
