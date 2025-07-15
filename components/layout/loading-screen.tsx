@@ -31,7 +31,7 @@ export function LoadingScreen({ onComplete }: { onComplete: () => void }) {
             className="w-32 h-32 relative"
           >
             <Image
-              src="./SaveSpotsLogo.png"
+              src="./assets/SaveSpotsLogo.png"
               alt="SaveSpots Logo"
               fill
               className="w-10 h-auto"

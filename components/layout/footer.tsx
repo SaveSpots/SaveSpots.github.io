@@ -30,7 +30,7 @@ export function Footer() {
               data-cursor="button"
             >
               <Image
-                src="./SaveSpotsLogo.png"
+                src="./assets/SaveSpotsLogo.png"
                 alt="SaveSpots Logo"
                 width={1000}
                 height={1000}

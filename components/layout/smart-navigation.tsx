@@ -90,11 +90,9 @@ export function SmartNavigation() {
       transition={{ duration: 0.6, ease: "easeOut" }}
     >
       <div className="flex items-center justify-between md:justify-center space-x-4 md:space-x-8">
-        <motion.div
-          className="flex items-center space-x-2"
-        >
+        <motion.div className="flex items-center space-x-2">
           <Image
-            src="./SaveSpotsLogo.png"
+            src="./assets/SaveSpotsLogo.png"
             alt="SaveSpots Logo"
             width={1000}
             height={1000}
@@ -121,7 +119,7 @@ export function SmartNavigation() {
               <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center space-x-2">
                   <Image
-                    src="./SaveSpotsLogo.png"
+                    src="./assets/SaveSpotsLogo.png"
                     alt="SaveSpots Logo"
                     width={1000}
                     height={1000}
