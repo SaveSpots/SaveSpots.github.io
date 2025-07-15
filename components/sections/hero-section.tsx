@@ -23,7 +23,7 @@ export function HeroSection({ isLoading }: HeroSectionProps) {
   return (
     <section
       id="hero"
-      className="min-h-screen flex items-center justify-center relative overflow-hidden overflow-x-hidden w-full"
+      className="min-h-screen flex items-center justify-center relative overflow-hidden overflow-x-hidden w-full pt-24 md:pt-0"
     >
       <DynamicBackground />
       <motion.div
