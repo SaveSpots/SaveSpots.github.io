@@ -67,47 +67,19 @@ export function HeroSection({ isLoading }: HeroSectionProps) {
             ease: "easeOut",
           }}
         >
-          <div className="flex flex-col items-center gap-4">
-            {/* First row: SaveBox buttons */}
-            <div className="flex flex-col md:flex-row gap-4 justify-center">
-              <ConsistentButton
-                variant="primary"
-                onClick={() => scrollToSection("location")}
-                aria-label="Scroll to the location section"
-              >
-                Find a SaveBox Near You
-              </ConsistentButton>
+          <ConsistentButton
+            variant="primary"
+            onClick={() => scrollToSection("location")}
+            aria-label="Scroll to the location section"
+          >
+            Find a SaveBox Near You
+          </ConsistentButton>
 
-              <Link
-                href="https://savespots.fillout.com/savebox"
-                target="_blank"
-              >
-                <ConsistentButton variant="primary">
-                  Host a SaveBox at Your Location
-                </ConsistentButton>
-              </Link>
-            </div>
-
-            {/* Second row: Contact & Volunteer buttons */}
-            <div className="flex flex-col md:flex-row gap-4 justify-center">
-              <ConsistentButton
-                variant="secondary"
-                onClick={() => scrollToSection("contact")}
-                aria-label="Scroll to the contact section"
-              >
-                Get in Touch
-              </ConsistentButton>
-
-              <Link
-                href="https://savespots.fillout.com/volunteer"
-                target="_blank"
-              >
-                <ConsistentButton variant="secondary">
-                  Become a Volunteer
-                </ConsistentButton>
-              </Link>
-            </div>
-          </div>
+          <Link href="https://savespots.fillout.com/savebox" target="_blank">
+            <ConsistentButton variant="secondary">
+              Host a SaveBox at Your Location
+            </ConsistentButton>
+          </Link>
         </motion.div>
         <motion.div
           className="text-center"
