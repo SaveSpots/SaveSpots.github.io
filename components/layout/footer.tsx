@@ -13,9 +13,10 @@ export function Footer() {
 
   const navItems = [
     { id: "hero", label: "Home" },
+    { id: "impact", label: "Impact" },
+    { id: "expertise", label: "Expertise" },
     { id: "services", label: "Services" },
     { id: "process", label: "Process" },
-    { id: "location", label: "Locations" },
     { id: "contact", label: "Contact" },
   ];
 

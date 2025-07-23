@@ -23,15 +23,16 @@ export function HeroSection({ isLoading }: HeroSectionProps) {
   return (
     <section
       id="hero"
-      className="min-h-screen flex items-center justify-center relative overflow-hidden overflow-x-hidden w-full pt-24 md:pt-0"
+      className="h-screen flex flex-col justify-center relative overflow-hidden overflow-x-hidden w-full pt-6 md:pt-0 px-4"
     >
       <DynamicBackground />
+
       <motion.div
-        className="text-center z-10 max-w-4xl w-full mx-auto px-2 sm:px-6"
+        className="text-center z-10 max-w-4xl w-full mx-auto"
         style={{ y: heroY }}
       >
         <motion.h1
-          className="text-4xl sm:text-6xl md:text-8xl font-extrabold mb-8 tracking-tight text-white break-words whitespace-normal max-w-full w-full"
+          className="text-3xl sm:text-5xl md:text-8xl font-extrabold mb-4 tracking-tight text-white break-words whitespace-normal max-w-full w-full"
           initial={{ opacity: 0, y: 100 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{
@@ -44,7 +45,7 @@ export function HeroSection({ isLoading }: HeroSectionProps) {
           SaveSpots
         </motion.h1>
         <motion.p
-          className="text-sm sm:text-base md:text-xl text-white/90 mb-12 max-w-full sm:max-w-3xl mx-auto px-2 sm:px-6 break-words whitespace-normal"
+          className="text-xs sm:text-sm md:text-xl text-white/90 mb-8 max-w-full sm:max-w-3xl mx-auto break-words whitespace-normal"
           initial={{ opacity: 0, y: 60 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{
@@ -58,7 +59,7 @@ export function HeroSection({ isLoading }: HeroSectionProps) {
         </motion.p>
 
         <motion.div
-          className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-16"
+          className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8"
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{
@@ -69,7 +70,7 @@ export function HeroSection({ isLoading }: HeroSectionProps) {
         >
           <ConsistentButton
             variant="primary"
-            onClick={() => scrollToSection("location")}
+            onClick={() => scrollToSection("impact")}
             aria-label="Scroll to the location section"
           >
             Find a SaveBox Near You
@@ -81,16 +82,36 @@ export function HeroSection({ isLoading }: HeroSectionProps) {
             </ConsistentButton>
           </Link>
         </motion.div>
+
         <motion.div
-          className="text-center"
+          className="text-center mb-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 1, delay: isLoading ? 4.4 : 0.9 }}
         >
-          <p className="text-white/80 mb-6 font-medium" data-cursor="text">
+          <p className="text-white/80 mb-4 font-medium" data-cursor="text">
             Trusted by the world's most innovative companies.
           </p>
           <InfiniteLogoCarousel />
+        </motion.div>
+
+        <motion.div
+          className="flex justify-center mt-5"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{
+            duration: 1,
+            delay: isLoading ? 4.3 : 0.8,
+            ease: "easeOut",
+          }}
+        >
+          <ConsistentButton
+            variant="cta"
+            onClick={() => scrollToSection("impact")}
+            aria-label="Scroll to Our Impact section"
+          >
+            See Our Impact
+          </ConsistentButton>
         </motion.div>
       </motion.div>
       <HeaderTransition />

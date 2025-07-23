@@ -5,16 +5,16 @@ import { AnimatePresence } from "framer-motion"
 
 import { CursorFollower } from "@/components/layout/cursor-follower"
 import { LoadingScreen } from "@/components/layout/loading-screen"
-import { SmartNavigation } from "@/components/layout/smart-navigation"
+import { SmartNavigation } from "@/components/layout/navbar"
 import { Footer } from "@/components/layout/footer"
 import { AnimatedSection } from "@/components/shared/animated-section"
 
 import { HeroSection } from "@/components/sections/hero-section"
-import { StopHiringSection } from "@/components/sections/why-us"
+import { WhyUs } from "@/components/sections/why-us"
 import { ComparisonSection } from "@/components/sections/comparison-section"
 import { ServicesSection } from "@/components/sections/services-section"
 import { ProcessSection } from "@/components/sections/process-section"
-import { LocationMapSection } from "@/components/sections/location-map-section"
+import { OurImpactSection } from "@/components/sections/impact-section";
 import { ContactSection } from "@/components/sections/contact-section"
 
 
@@ -42,18 +42,18 @@ export default function HomePage() {
   return (
     <>
       {!isMobile && <CursorFollower />}
-      <AnimatePresence>
+      {/* <AnimatePresence>
         {isLoading && <LoadingScreen onComplete={() => setIsLoading(false)} />}
-      </AnimatePresence>
+      </AnimatePresence> */}
 
       <div className="min-h-screen bg-theme-red text-white">
         <SmartNavigation />
         <HeroSection isLoading={isLoading} />
-        <StopHiringSection />
+        <OurImpactSection />
+        <WhyUs />
         <ComparisonSection />
         <ServicesSection />
         <ProcessSection />
-        <LocationMapSection />
         <ContactSection />
         <AnimatedSection>
           <Footer />
