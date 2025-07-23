@@ -14,7 +14,14 @@ export function SmartNavigation() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    const sections = ["hero", "services", "process", "location", "contact"];
+    const sections = [
+      "hero",
+      "impact",
+      "expertise",
+      "services",
+      "process",
+      "contact",
+    ];
     const observers = sections.map((section) => {
       const element = document.getElementById(section);
       if (!element) return null;
@@ -44,9 +51,10 @@ export function SmartNavigation() {
 
   const navItems = [
     { id: "hero", label: "Home" },
+    { id: "impact", label: "Impact" },
+    { id: "expertise", label: "Expertise" },
     { id: "services", label: "Services" },
     { id: "process", label: "Process" },
-    { id: "location", label: "Locations" },
     { id: "contact", label: "Contact" },
   ];
 
@@ -59,7 +67,7 @@ export function SmartNavigation() {
           className={`text-sm font-medium transition-colors relative ${
             activeSection === id
               ? "text-theme-red"
-              : "text-gray-600 hover:text-theme-red"
+              : "text-black hover:text-theme-red"
           }`}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
@@ -79,18 +87,15 @@ export function SmartNavigation() {
 
   return (
     <motion.nav
-      className="fixed top-5 transform -translate-x-1/2 z-40 bg-white backdrop-blur-md border border-theme-red/50 rounded-full px-6 py-3 w-[calc(100%-2rem)] md:w-auto"
-      style={{
-        left: window.innerWidth < 768 ? "5%" : "30%",
-        right: window.innerWidth < 768 ? "5%" : "30%",
-        opacity: navOpacity,
-      }}
+      className="fixed top-5 left-0 right-0 flex justify-center z-40"
+      style={{ opacity: navOpacity }}
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
     >
-      <div className="flex items-center justify-between md:justify-center space-x-4 md:space-x-8">
-        <motion.div className="flex items-center space-x-2">
+      <div className="relative w-full max-w-3xl mx-4 bg-white  border border-theme-red/50 rounded-full px-8 py-4 flex items-center justify-center min-h-16">
+        {/* Logo absolutely positioned left */}
+        <div className="flex items-center space-x-2 px-5">
           <Image
             src="./assets/SaveSpotsLogo.png"
             alt="SaveSpots Logo"
@@ -100,11 +105,15 @@ export function SmartNavigation() {
             style={{ objectFit: "contain" }}
           />
           <span className="text-lg font-semibold text-black">SaveSpots</span>
-        </motion.div>
+        </div>
 
-        <div className="hidden md:flex items-center space-x-6">{navLinks}</div>
+        {/* Desktop nav links centered */}
+        <div className="hidden md:flex items-center space-x-6">
+          {navLinks}
+        </div>
 
-        <div className="md:hidden">
+        {/* Mobile menu button positioned right */}
+        <div className="md:hidden absolute right-4">
           <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="text-theme-red">
