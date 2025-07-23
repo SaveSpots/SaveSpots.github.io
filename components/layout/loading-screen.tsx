@@ -30,8 +30,15 @@ export function LoadingScreen({ onComplete }: { onComplete: () => void }) {
             transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
             className="w-32 h-32 relative"
           >
-            <Image
+            {/* <Image
               src="./assets/SaveSpotsLogo.png"
+              alt="SaveSpots Logo"
+              fill
+              className="w-10 h-auto"
+              style={{ objectFit: "contain" }}
+            /> */}
+            <Image
+              src="./assets/SaveSpotsSticker.png"
               alt="SaveSpots Logo"
               fill
               className="w-10 h-auto"
