@@ -2,9 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
+html, body {
   overflow-x: hidden;
+  max-width: 100%;
 }
+
 
 @layer base {
   :root {
