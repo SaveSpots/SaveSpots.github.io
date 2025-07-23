@@ -66,6 +66,15 @@ export function ContactSection() {
                   Host a SaveBox at Your Location
                 </ConsistentButton>
               </Link>
+              <Link
+                href="mailto:contact@savespots.org"
+                className="w-full"
+                target="_blank"
+              >
+                <ConsistentButton variant="primary" className="w-full">
+                  Email: Contact@savespots.org
+                </ConsistentButton>
+              </Link>
             </motion.div>
           </div>
           <div>

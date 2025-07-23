@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowUp } from "lucide-react";
 import { AnimatedSection } from "@/components/shared/animated-section";
+import { DynamicBackground } from "@/components/layout/dynamic-background";
 
 const steps = [
   {
@@ -46,7 +47,7 @@ const staggerContainer = {
 
 export function ProcessSection() {
   return (
-    <section id="process" className="py-20 px-4 bg-theme-red">
+    <section id="process" className="py-20 px-4 bg-theme-red-light">
       <AnimatedSection>
         <div className="max-w-6xl mx-auto">
           <motion.h2

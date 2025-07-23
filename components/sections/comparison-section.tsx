@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { AnimatedSection } from "@/components/shared/animated-section";
+import { DynamicBackground } from "@/components/layout/dynamic-background";
 
 const fadeInUp = {
   initial: { opacity: 0, y: 60 },
@@ -48,7 +49,7 @@ export function ComparisonSection() {
   ];
 
   return (
-    <AnimatedSection className="py-20 px-4 bg-theme-red">
+    <AnimatedSection className="py-20 px-4 bg-theme-red-light">
       <div className="max-w-6xl mx-auto">
         <motion.h2
           className="text-4xl md:text-5xl font-extrabold mb-16 text-center tracking-tight text-white"
