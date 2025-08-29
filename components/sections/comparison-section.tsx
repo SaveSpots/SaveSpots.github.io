@@ -32,20 +32,20 @@ const staggerContainer = {
 };
 
 export function ComparisonSection() {
-  const typicalPoints = [
-    "Promises the world with little experience.",
-    "Uses only basic tools like ChatGPT wrappers & off-the-shelf templates.",
-    "Learns on your project time — costing you more.",
-    "Delivers unscalable, fragile gimmicks.",
-    "Disappears when the work gets complex.",
+  const traditionalPoints = [
+    "Places supplies based on public convenience (like libraries), not where at-risk individuals actually are.",
+    "Uses a broad, scattershot approach in placing materials around cities that relies on luck.",
+    "Overlooks the hardest-hit and most vulnerable communities.",
+    "Little, if any, community engagement.",
+    "Result: Wasted resources & missed chances to save lives.",
   ];
 
   const ourPoints = [
-    "Defines a clear, deliverable scope with proven architecture.",
-    "Builds custom, secure, full-stack systems that scale.",
-    "Brings years of real-world experience from NASA, Uber, Klarna & more.",
-    "Engineers robust solutions that transform your operations.",
-    "Delivers end-to-end — from strategy to support.",
+    "Uses a multi-tiered data-driven method to pinpoint overdose hotspots.",
+    "Deploys resources strategically in high-traffic public spaces.",
+    "Applies a surgical focus on disproportionately affected communities.",
+    "Builds a community feedback loop of residents for constant improvement and spreading awareness.",
+    "Result: Maximized impact, ensuring help is always within reach.",
   ];
 
   return (
@@ -59,8 +59,8 @@ export function ComparisonSection() {
           viewport={{ once: true }}
           data-cursor="text"
         >
-          Senior-Level Problems Require <br /> Senior-Level Talent.
-        </motion.h2>
+          Harm Reduction Efforts Are Too Slow. <br />  We're Changing That.
+        </motion.h2>  
 
         <motion.div
           className="grid md:grid-cols-2 gap-8"
@@ -79,10 +79,10 @@ export function ComparisonSection() {
                   className="text-2xl font-semibold mb-8 text-center text-white"
                   data-cursor="text"
                 >
-                  The “Typical AI Professional”
+                  The Traditional Approach ❌
                 </h3>
                 <ul className="space-y-5">
-                  {typicalPoints.map((point, i) => (
+                  {traditionalPoints.map((point, i) => (
                     <motion.li
                       key={point}
                       className="flex gap-3 items-start"
@@ -92,9 +92,16 @@ export function ComparisonSection() {
                       transition={{ delay: i * 0.1 }}
                     >
                       <span className="mt-2 w-2 h-2 bg-white rounded-full flex-shrink-0"></span>
-                      <span className="text-white/90 leading-relaxed">
-                        {point}
-                      </span>
+                      {/* --- Logic to bold the last item --- */}
+                      {i === traditionalPoints.length - 1 ? (
+                        <strong className="text-white font-bold leading-relaxed text-lg">
+                          {point}
+                        </strong>
+                      ) : (
+                        <span className="text-white/90 leading-relaxed text-lg">
+                          {point}
+                        </span>
+                      )}
                     </motion.li>
                   ))}
                 </ul>
@@ -112,7 +119,7 @@ export function ComparisonSection() {
                   className="text-2xl font-semibold mb-8 text-center text-white"
                   data-cursor="text"
                 >
-                  Our Proven Architectural Approach
+                  Our Approach ✅
                 </h3>
                 <ul className="space-y-5">
                   {ourPoints.map((point, i) => (
@@ -125,9 +132,16 @@ export function ComparisonSection() {
                       transition={{ delay: i * 0.1 }}
                     >
                       <span className="mt-2 w-2 h-2 bg-white rounded-full flex-shrink-0"></span>
-                      <span className="text-white/90 leading-relaxed">
-                        {point}
-                      </span>
+                      {/* --- Logic to bold the last item --- */}
+                      {i === ourPoints.length - 1 ? (
+                        <strong className="text-white font-bold leading-relaxed text-lg">
+                          {point}
+                        </strong>
+                      ) : (
+                        <span className="text-white/90 leading-relaxed text-lg">
+                          {point}
+                        </span>
+                      )}
                     </motion.li>
                   ))}
                 </ul>

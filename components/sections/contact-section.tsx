@@ -37,8 +37,8 @@ export function ContactSection() {
               transition={{ delay: 0.2 }}
               data-cursor="text"
             >
-              Reach out to us for collaborations, inquiries, or to learn more
-              about our AI solutions.
+              Reach out to us for collaborations, inquiries, or to get involved
+              with the mission. We're here to connect and make a difference.
             </motion.p>
             <motion.div
               className="flex flex-col gap-4 max-w-xs mx-auto md:mx-0"

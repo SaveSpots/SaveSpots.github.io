@@ -3,7 +3,6 @@
 import { motion } from "framer-motion";
 import { AnimatedSection } from "@/components/shared/animated-section";
 import { ConsistentButton } from "@/components/shared/consistent-button";
-import { DynamicBackground } from "@/components/layout/dynamic-background";
 
 const fadeInUp = {
   initial: { opacity: 0, y: 60 },
@@ -11,11 +10,32 @@ const fadeInUp = {
   transition: { duration: 0.6, ease: "easeOut" },
 };
 
+// Variants for the typewriter animation container
+const sentenceVariant = {
+  hidden: { opacity: 1 },
+  visible: {
+    opacity: 1,
+    transition: {
+      delay: 0.2,
+      staggerChildren: 0.005, // Adjusts the speed of typing
+    },
+  },
+};
+
+// Variants for each individual letter
+const letterVariant = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1 },
+};
+
 export function WhyUs() {
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
     element?.scrollIntoView({ behavior: "smooth" });
   };
+
+  const missionStatement =
+    "To prevent overdose deaths and build safer communities. We use a data-driven approach to place life-saving Narcan and harm reduction supplies directly into the hands of the public, building a powerful network of access and education to end the opioid epidemic together.";
 
   return (
     <section id="expertise" className="py-20 px-4 bg-theme-red">
@@ -29,22 +49,25 @@ export function WhyUs() {
             viewport={{ once: true }}
             data-cursor="text"
           >
-            Stop Hiring "AI Professionals".
+            Our Mission
           </motion.h2>
+          
+          {/* Updated Mission Statement with Typewriter Effect */}
           <motion.p
-            className="text-xl text-white/90 mb-16 max-w-4xl mx-auto leading-relaxed font-medium"
-            variants={fadeInUp}
-            initial="initial"
-            whileInView="animate"
+            className="text-2xl md:text-3xl text-white/90 mb-16 max-w-4xl mx-auto leading-relaxed font-medium"
+            variants={sentenceVariant}
+            initial="hidden"
+            whileInView="visible"
             viewport={{ once: true }}
-            transition={{ delay: 0.2 }}
             data-cursor="text"
           >
-            The market is flooded with inexperienced AI hype. We are a
-            senior-level development firm that builds robust, enterprise-grade
-            AI systems to automate your operations, increase your revenue, and
-            secure your market share.
+            {missionStatement.split("").map((char, index) => (
+              <motion.span key={index} variants={letterVariant}>
+                {char}
+              </motion.span>
+            ))}
           </motion.p>
+
           <motion.div
             variants={fadeInUp}
             initial="initial"
@@ -66,3 +89,4 @@ export function WhyUs() {
     </section>
   );
 }
+

@@ -3,7 +3,7 @@
 import { motion } from "framer-motion"
 import { Card, CardContent } from "@/components/ui/card"
 import { AnimatedSection } from "@/components/shared/animated-section"
-import { DynamicBackground } from "@/components/layout/dynamic-background";
+import { Search, HandHeart, BrainCircuit } from "lucide-react"
 
 const fadeInUp = {
   initial: { opacity: 0, y: 60 },
@@ -22,23 +22,24 @@ const staggerContainer = {
 export function ServicesSection() {
   const services = [
     {
-      title: "Automate Revenue &\nSales Operations",
+      title: "Pinpoint Areas of Need",
       description:
-        "We build revenue-generating machines that power your go-to-market motion — from hyper-personalized outbound campaigns to scraping competitor ad strategies.",
-      metrics: ["Efficiency +103%", "Cost -67%"],
+        "We use publicly available governmental and reliable non-governmental data to identify blocks in need of SaveBoxes",
+      icon: <Search className="w-16 h-16 text-theme-red" />,
     },
     {
-      title: "Workflow Automations",
+      title: "Mass Outreach and Distribution",
       description:
-        "We automate your daily work to eliminate repetitive tasks, boost efficiency, save time, and eliminate errors.",
-      centerMetric: "100+",
+        "Use a network of dedicated students and volunteers to reach out to local businesses and community centers to inquire about placing SaveBoxes in high-traffic, easily accessible locations.",
+      icon: <HandHeart className="w-16 h-16 text-theme-red" />,
     },
     {
-      title: "Unlock Financial &\nData Intelligence",
+      title: "Getting Smarter",
       description:
-        "Your financial and operational data is a goldmine. We build secure, robust integrations and pipelines to automate bookkeeping, sync transactions, and unlock predictive insights.",
+        "Continuously monitor and analyze the performance of each SaveBox location, regularly connecting with the people hosting SaveBoxes to optimize placement and education to ensure maximum impact.",
+      icon: <BrainCircuit className="w-16 h-16 text-theme-red" />,
     },
-  ]
+  ];
 
   return (
     <section id="services" className="py-20 px-4 bg-theme-red">
@@ -52,7 +53,7 @@ export function ServicesSection() {
             viewport={{ once: true }}
             data-cursor="text"
           >
-            We Architect Solutions
+            Our Process
           </motion.h2>
 
           <motion.div
@@ -73,39 +74,10 @@ export function ServicesSection() {
                   className="bg-white border-theme-red-dark group hover:bg-gray-100 transition-all duration-300 h-full"
                   data-cursor="view"
                 >
-                  <CardContent className="p-8">
-                    <div className="mb-6">
-                      <div className="w-full h-32 bg-theme-red-light/20 rounded-lg mb-4 flex items-center justify-center relative overflow-hidden">
-                        {service.centerMetric ? (
-                          <div className="w-20 h-20 border-2 border-theme-red rounded-full flex items-center justify-center">
-                            <span className="text-2xl font-bold text-theme-red">
-                              {service.centerMetric}
-                            </span>
-                          </div>
-                        ) : (
-                          <motion.div
-                            className="absolute inset-0 bg-gradient-to-r from-theme-red/10 to-theme-red-dark/10"
-                            animate={{ x: [-100, 100] }}
-                            transition={{
-                              duration: 3,
-                              repeat: Infinity,
-                              ease: "linear",
-                            }}
-                          />
-                        )}
-                      </div>
-                      {service.metrics && (
-                        <ul className="flex flex-wrap gap-2">
-                          {service.metrics.map((metric, i) => (
-                            <li
-                              key={i}
-                              className="text-sm bg-theme-red px-3 py-1 rounded text-white font-medium"
-                            >
-                              {metric}
-                            </li>
-                          ))}
-                        </ul>
-                      )}
+                  {/* I added text-center to this component */}
+                  <CardContent className="p-8 text-center">
+                    <div className="w-full h-32 bg-theme-red-light/20 rounded-lg mb-6 flex items-center justify-center">
+                      {service.icon}
                     </div>
 
                     <h3
@@ -128,5 +100,5 @@ export function ServicesSection() {
         </div>
       </AnimatedSection>
     </section>
-  )
+  );
 }
