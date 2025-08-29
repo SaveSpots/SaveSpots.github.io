@@ -90,8 +90,8 @@ export function HeroSection({ isLoading }: HeroSectionProps) {
           transition={{ duration: 1, delay: isLoading ? 4.4 : 0.9 }}
         >
           <p className="text-white/80 mb-4 font-medium" data-cursor="text">
-            Trusted by the world's most innovative companies.
-          </p>
+           Official Partners in Our Lifesaving Mission
+</p>
           <InfiniteLogoCarousel />
         </motion.div>
 
