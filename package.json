@@ -56,6 +56,7 @@
     "react-hook-form": "latest",
     "react-icons": "^5.5.0",
     "react-leaflet": "^4.2.1",
+    "react-leaflet-div-icon": "^1.1.0",
     "react-resizable-panels": "^2.1.7",
     "recharts": "2.15.0",
     "sonner": "^1.7.1",
