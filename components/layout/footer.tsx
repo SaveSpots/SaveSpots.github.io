@@ -16,7 +16,7 @@ export function Footer() {
     { id: "impact", label: "Impact" },
     { id: "expertise", label: "Expertise" },
     { id: "services", label: "Services" },
-    { id: "process", label: "Process" },
+    { id: "gallery", label: "Photos" },
     { id: "contact", label: "Contact" },
   ];
 

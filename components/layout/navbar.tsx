@@ -19,7 +19,7 @@ export function SmartNavigation() {
       "impact",
       "expertise",
       "services",
-      "process",
+      "gallery",
       "contact",
     ];
     const observers = sections.map((section) => {
@@ -54,7 +54,7 @@ export function SmartNavigation() {
     { id: "impact", label: "Impact" },
     { id: "expertise", label: "Expertise" },
     { id: "services", label: "Services" },
-    { id: "process", label: "Process" },
+    { id: "gallery", label: "Photos" },
     { id: "contact", label: "Contact" },
   ];
 
