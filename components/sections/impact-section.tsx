@@ -4,7 +4,12 @@ import { motion } from "framer-motion";
 import { AnimatedSection } from "@/components/shared/animated-section";
 import { DynamicBackground } from "@/components/layout/dynamic-background";
 import dynamic from "next/dynamic";
-import { FaCalendarAlt, FaMapMarkerAlt, FaHeart, FaBuilding } from "react-icons/fa";
+import {
+  FaCalendarAlt,
+  FaMapMarkerAlt,
+  FaHeart,
+  FaBuilding,
+} from "react-icons/fa";
 
 const ChicagoNarcanMap = dynamic(
   () => import("@/components/sections/chicago-narcan-map"),
@@ -21,22 +26,22 @@ const impactStats = [
   {
     metric: "2025",
     title: "Founded",
-    icon: <FaBuilding className="text-theme-red text-3xl" />,
+    icon: FaBuilding,
   },
   {
     metric: "2",
     title: "Savespots",
-    icon: <FaMapMarkerAlt className="text-theme-red text-3xl" />,
+    icon: FaMapMarkerAlt,
   },
   // {
   //   metric: "5,000",
   //   title: "Narcan Distributed",
-  //   icon: <FaHeart className="text-theme-red text-3xl" />,
+  //   icon: "FaHeart",
   // },
   // {
   //   metric: "3",
   //   title: "Events Held",
-  //   icon: <FaCalendarAlt className="text-theme-red text-3xl" />,
+  //   icon: "FaCalendarAlt",
   // },
 ];
 
@@ -77,7 +82,9 @@ export function OurImpactSection() {
                   key={index}
                   className="bg-white p-8 rounded-xl shadow-lg flex flex-col items-center text-center"
                 >
-                  <div className="mb-4">{item.icon}</div>
+                  <div className="mb-4">
+                    <item.icon className="text-theme-red text-3xl" />
+                  </div>
                   <div className="text-5xl font-extrabold text-theme-red">
                     {item.metric}
                   </div>

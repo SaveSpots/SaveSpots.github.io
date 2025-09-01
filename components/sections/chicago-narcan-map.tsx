@@ -23,9 +23,9 @@ const svgString = ReactDOMServer.renderToStaticMarkup(
 );
 
 const pulseHTML = `
-  <div class="relative w-12 h-12">
-    <div class="absolute inset-0 rounded-full bg-[rgb(122,59,74)] animate-ping"></div>
-    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center">
+  <div class="leaflet-marker-icon leaflet-interactive relative w-12 h-12 cursor-pointer">
+    <div class="absolute inset-0 rounded-full bg-[rgb(122,59,74)] animate-ping pointer-events-none"></div>
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center pointer-events-none">
       ${svgString}
     </div>
   </div>
@@ -38,6 +38,7 @@ export const customIcon = new L.DivIcon({
   iconAnchor: [24, 24],
   popupAnchor: [0, -24],
 });
+
 
 // Narcan locations
 type NarcanLocation = {
