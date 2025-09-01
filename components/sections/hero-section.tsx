@@ -23,7 +23,7 @@ export function HeroSection({ isLoading }: HeroSectionProps) {
   return (
     <section
       id="hero"
-      className="h-screen flex flex-col justify-center relative overflow-hidden overflow-x-hidden w-full pt-6 md:pt-0 px-4"
+      className="min-h-dvh flex flex-col justify-center relative overflow-hidden w-full px-4"
     >
       <DynamicBackground />
 
@@ -90,8 +90,8 @@ export function HeroSection({ isLoading }: HeroSectionProps) {
           transition={{ duration: 1, delay: isLoading ? 4.4 : 0.9 }}
         >
           <p className="text-white/80 mb-4 font-medium" data-cursor="text">
-           Official Partners in Our Lifesaving Mission
-</p>
+            Official Partners in Our Lifesaving Mission
+          </p>
           <InfiniteLogoCarousel />
         </motion.div>
 

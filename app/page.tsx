@@ -13,7 +13,7 @@ import { HeroSection } from "@/components/sections/hero-section";
 import { WhyUs } from "@/components/sections/why-us";
 import { ComparisonSection } from "@/components/sections/comparison-section";
 import { ServicesSection } from "@/components/sections/services-section";
-import { ProcessSection } from "@/components/sections/process-section";
+import { PhotoSection } from "@/components/sections/photos-sections";
 import { OurImpactSection } from "@/components/sections/impact-section";
 import { ContactSection } from "@/components/sections/contact-section";
 
@@ -25,21 +25,24 @@ export default function HomePage() {
   useEffect(() => {
     setMounted(true);
 
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
+    const userAgent =
+      typeof navigator === "undefined" ? "" : navigator.userAgent;
+    const isMobileDevice =
+      /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(userAgent);
 
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
+    setIsMobile(isMobileDevice);
 
-    return () => window.removeEventListener("resize", checkMobile);
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", handleResize);
+
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   if (!mounted) return null; // 🟢 prevents server render with window
 
   return (
     <>
-      {!isMobile && <CursorFollower />}
+      {mounted && !isMobile && <CursorFollower />}
       <AnimatePresence>
         {isLoading && <LoadingScreen onComplete={() => setIsLoading(false)} />}
       </AnimatePresence>
@@ -51,7 +54,7 @@ export default function HomePage() {
         <WhyUs />
         <ComparisonSection />
         <ServicesSection />
-        <ProcessSection />
+        <PhotoSection />
         <ContactSection />
         <AnimatedSection>
           <Footer />
