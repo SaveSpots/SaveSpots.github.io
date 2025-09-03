@@ -52,13 +52,21 @@ type NarcanLocation = {
 
 const narcanLocations: NarcanLocation[] = [
   {
-    name: "Devon Pharmacy",
+    name: "Al-Tayyab Zabiha Halal Meat and Grocery",
     address: "2753 W Devon Ave, Chicago, IL 60659",
-    lat: 41.9973846,
-    lng: -87.6993298,
-    hours: "Mon-Fri 9am-8pm",
-    notes: "Ring bell for pickup",
+    lat: 41.99750978607458,
+    lng: -87.69927603410231,  
+    hours: "11 AM - 8 PM Wed-Mon, 1:30 PM - 8 PM Tues",
+    notes: "Front counter",
   },
+  {
+    name: "Casey's Corner",
+    address: "2733 W Devon Ave, Chicago, IL 60659",
+    lat: 41.99753141291217,
+    lng: -87.69857193993684,
+    hours: "3 PM - 1 AM Tues-Sat (Closed Mon)",
+    notes: "Left Counter (or ask bartender)",
+  }
 ];
 
 export default function ChicagoNarcanMap() {
