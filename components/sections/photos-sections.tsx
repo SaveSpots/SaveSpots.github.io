@@ -11,12 +11,8 @@ interface Photo {
 }
 
 const photos: Photo[] = [
-  { src: "https://picsum.photos/600/400?random=1.webp", alt: "Photo 1" },
-  { src: "https://picsum.photos/600/400?random=2.webp", alt: "Photo 2" },
-  { src: "https://picsum.photos/600/400?random=3.webp", alt: "Photo 3" },
-  { src: "https://picsum.photos/600/400?random=4.webp", alt: "Photo 4" },
-  { src: "https://picsum.photos/600/400?random=5.webp", alt: "Photo 5" },
-  { src: "https://picsum.photos/600/400?random=6.webp", alt: "Photo 6" },
+  { src: "https://fastly.picsum.photos/id/499/600/400.jpg?hmac=xYUPmpUJwGKEFplt0hfyBQFXiLmpY0Pvsokvi6f6VFw", alt: "Photo 1" },
+  { src: "https://fastly.picsum.photos/id/499/600/400.jpg?hmac=xYUPmpUJwGKEFplt0hfyBQFXiLmpY0Pvsokvi6f6VFw", alt: "Photo 1" },
 ];
 
 export function PhotoSection() {
