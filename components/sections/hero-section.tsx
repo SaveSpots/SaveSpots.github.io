@@ -68,13 +68,14 @@ export function HeroSection({ isLoading }: HeroSectionProps) {
             ease: "easeOut",
           }}
         >
-          <ConsistentButton
-            variant="primary"
-            onClick={() => scrollToSection("impact")}
-            aria-label="Scroll to the location section"
-          >
-            Find a SaveBox Near You
-          </ConsistentButton>
+            <Link href="https://savespots.fillout.com/volunteer" target="_blank">
+            <ConsistentButton
+              variant="primary"
+              aria-label="Join our research team"
+            >
+              Join Our Research Team
+            </ConsistentButton>
+            </Link>
 
           <Link href="https://savespots.fillout.com/savebox" target="_blank">
             <ConsistentButton variant="secondary">

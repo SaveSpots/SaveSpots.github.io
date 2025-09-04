@@ -56,7 +56,7 @@ const narcanLocations: NarcanLocation[] = [
     address: "2753 W Devon Ave, Chicago, IL 60659",
     lat: 41.99750978607458,
     lng: -87.69927603410231,  
-    hours: "11 AM - 8 PM Wed-Mon, 1:30 PM - 8 PM Tues",
+    hours: "11 AM - 8 PM Wed-Mon, 1:30 PM - 8 PM Tues", 
     notes: "Front counter",
   },
   {

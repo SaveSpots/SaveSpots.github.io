@@ -54,7 +54,7 @@ export function ContactSection() {
                 target="_blank"
               >
                 <ConsistentButton variant="primary" className="w-full">
-                  Volunteer With Us
+                  Join our Research Team
                 </ConsistentButton>
               </Link>
               <Link
