@@ -29,7 +29,7 @@ const impactStats = [
     icon: FaBuilding,
   },
   {
-    metric: "2",
+    metric: "10",
     title: "Savespots",
     icon: FaMapMarkerAlt,
   },

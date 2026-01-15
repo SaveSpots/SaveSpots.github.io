@@ -66,6 +66,62 @@ const narcanLocations: NarcanLocation[] = [
     lng: -87.69857193993684,
     hours: "3 PM - 1 AM Tues-Sat (Closed Mon)",
     notes: "Left Counter (or ask bartender)",
+  },
+  {
+    name: "3000 W 63rd St",
+    address: "3000 W 63rd St, Chicago, IL",
+    lat: 41.7785,
+    lng: -87.7000,
+    hours: "24/7",
+  },
+  {
+    name: "1741 S Ruble St",
+    address: "1741 S Ruble St, Chicago, IL",
+    lat: 41.8520,
+    lng: -87.6620,
+    hours: "24/7",
+  },
+  {
+    name: "500 W 34th St",
+    address: "500 W 34th St, Steger, IL",
+    lat: 41.4700,
+    lng: -87.6360,
+    hours: "24/7",
+  },
+  {
+    name: "3400 Union Ave",
+    address: "3400 Union Ave, Steger, IL",
+    lat: 41.4720,
+    lng: -87.6380,
+    hours: "24/7",
+  },
+  {
+    name: "7348 South Stony Island",
+    address: "7348 South Stony Island, Chicago, IL",
+    lat: 41.7610,
+    lng: -87.5850,
+    hours: "24/7",
+  },
+  {
+    name: "5458 S Wells St",
+    address: "5458 S Wells St, Chicago, IL",
+    lat: 41.7920,
+    lng: -87.6320,
+    hours: "24/7",
+  },
+  {
+    name: "7859 S State St",
+    address: "7859 S State St, Chicago, IL",
+    lat: 41.7510,
+    lng: -87.6220,
+    hours: "24/7",
+  },
+  {
+    name: "2801 W Fullerton Ave",
+    address: "2801 W Fullerton Ave, Chicago, IL",
+    lat: 41.9240,
+    lng: -87.6920,
+    hours: "24/7",
   }
 ];
 
