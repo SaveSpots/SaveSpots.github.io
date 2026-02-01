@@ -115,13 +115,6 @@ const narcanLocations: NarcanLocation[] = [
     lat: 41.7510,
     lng: -87.6220,
     hours: "24/7",
-  },
-  {
-    name: "2801 W Fullerton Ave",
-    address: "2801 W Fullerton Ave, Chicago, IL",
-    lat: 41.9240,
-    lng: -87.6920,
-    hours: "24/7",
   }
 ];
 
