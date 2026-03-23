@@ -17,22 +17,16 @@ DefaultIcon.mergeOptions({
   shadowUrl: "https://unpkg.com/leaflet@1.9.3/dist/images/marker-shadow.png",
 });
 
-const svgString = ReactDOMServer.renderToStaticMarkup(
-  <MapPin size={18} stroke="#5a2532" fill="#5a2532" />
-);
-
 const pinHTML = `
-  <div style="display:flex;align-items:center;justify-content:center;width:24px;height:24px;cursor:pointer;">
-    ${svgString}
-  </div>
+  <div style="width: 16px; height: 16px; background-color: #ef4444; border: 2px solid #ffffff; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.4); opacity: 0.85; cursor: pointer;"></div>
 `;
 
 export const customIcon = new L.DivIcon({
   html: pinHTML,
   className: "",
-  iconSize: [24, 24],
-  iconAnchor: [12, 24],
-  popupAnchor: [0, -20],
+  iconSize: [16, 16],
+  iconAnchor: [8, 8],
+  popupAnchor: [0, -10],
 });
 
 
