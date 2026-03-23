@@ -17,26 +17,22 @@ DefaultIcon.mergeOptions({
   shadowUrl: "https://unpkg.com/leaflet@1.9.3/dist/images/marker-shadow.png",
 });
 
-// Your custom pulsing icon with Lucide icon inside
 const svgString = ReactDOMServer.renderToStaticMarkup(
-  <MapPin size={28} stroke="#5a2532" />
+  <MapPin size={18} stroke="#5a2532" fill="#5a2532" />
 );
 
-const pulseHTML = `
-  <div class="leaflet-marker-icon leaflet-interactive relative w-12 h-12 cursor-pointer">
-    <div class="absolute inset-0 rounded-full bg-[rgb(122,59,74)] animate-ping pointer-events-none"></div>
-    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center pointer-events-none">
-      ${svgString}
-    </div>
+const pinHTML = `
+  <div style="display:flex;align-items:center;justify-content:center;width:24px;height:24px;cursor:pointer;">
+    ${svgString}
   </div>
 `;
 
 export const customIcon = new L.DivIcon({
-  html: pulseHTML,
+  html: pinHTML,
   className: "",
-  iconSize: [48, 48],
-  iconAnchor: [24, 24],
-  popupAnchor: [0, -24],
+  iconSize: [24, 24],
+  iconAnchor: [12, 24],
+  popupAnchor: [0, -20],
 });
 
 
