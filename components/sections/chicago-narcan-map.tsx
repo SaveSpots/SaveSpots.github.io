@@ -146,6 +146,8 @@ export default function ChicagoNarcanMap() {
       center={[41.885402455956715, -87.63855207545448]}
       zoom={10}
       scrollWheelZoom={true} // better UX for mobile
+      zoomSnap={0.1}
+      wheelPxPerZoomLevel={100}
       className="w-full h-[400px] md:h-[500px] rounded-lg overflow-hidden shadow-lg z-0"
     >
       <TileLayer
