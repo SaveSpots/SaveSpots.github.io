@@ -115,7 +115,39 @@ const narcanLocations: NarcanLocation[] = [
     lat: 41.7510,
     lng: -87.6220,
     hours: "24/7",
-  }
+  },
+  {
+    name: "R&S Beverages",
+    address: "308 E 75th St, Chicago, IL 60619",
+    lat: 41.7585743,
+    lng: -87.6177796,
+    hours: "Sun 11AM–11PM, Mon–Wed 9AM–11PM, Thu–Sat 9AM–12AM",
+    notes: "Liquor Store",
+  },
+  {
+    name: "Brick's Nightclub",
+    address: "4422 W Madison St, Chicago, IL 60624",
+    lat: 41.8811101,
+    lng: -87.7364876,
+    hours: "Sun–Fri 12PM–2AM, Sat 12PM–3AM",
+    notes: "Nightclub",
+  },
+  {
+    name: "Grove Market",
+    address: "6656 S Cottage Grove Ave, Chicago, IL 60637",
+    lat: 41.7733250,
+    lng: -87.6061206,
+    hours: "Hours not confirmed",
+    notes: "Grocery Store",
+  },
+  {
+    name: "7 Seas Food & Meat Mart",
+    address: "6501 S Cottage Grove Ave, Chicago, IL 60637",
+    lat: 41.7766560,
+    lng: -87.6057360,
+    hours: "8AM–10PM daily",
+    notes: "Grocery Store",
+  },
 ];
 
 export default function ChicagoNarcanMap() {
