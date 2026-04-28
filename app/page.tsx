@@ -11,7 +11,6 @@ import { AnimatedSection } from "@/components/shared/animated-section";
 
 import { HeroSection } from "@/components/sections/hero-section";
 import { WhyUs } from "@/components/sections/why-us";
-import { ComparisonSection } from "@/components/sections/comparison-section";
 import { ServicesSection } from "@/components/sections/services-section";
 import { OurImpactSection } from "@/components/sections/impact-section";
 import { ContactSection } from "@/components/sections/contact-section";
@@ -51,7 +50,6 @@ export default function HomePage() {
         <HeroSection isLoading={isLoading} />
         <OurImpactSection />
         <WhyUs />
-        <ComparisonSection />
         <ServicesSection />
         <ContactSection />
         <AnimatedSection>

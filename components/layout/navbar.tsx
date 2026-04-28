@@ -14,14 +14,7 @@ export function SmartNavigation() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    const sections = [
-      "hero",
-      "impact",
-      "expertise",
-      "services",
-      "gallery",
-      "contact",
-    ];
+    const sections = ["hero", "impact", "expertise", "services", "contact"];
     const observers = sections.map((section) => {
       const element = document.getElementById(section);
       if (!element) return null;
@@ -52,9 +45,8 @@ export function SmartNavigation() {
   const navItems = [
     { id: "hero", label: "Home" },
     { id: "impact", label: "Impact" },
-    { id: "expertise", label: "Expertise" },
-    { id: "services", label: "Services" },
-    { id: "gallery", label: "Photos" },
+    { id: "expertise", label: "Mission" },
+    { id: "services", label: "Process" },
     { id: "contact", label: "Contact" },
   ];
 
