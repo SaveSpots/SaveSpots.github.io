@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useScroll, useTransform } from "framer-motion";
-import { DynamicBackground } from "@/components/layout/dynamic-background";
+import { InfiniteGrid } from "@/components/layout/infinite-grid";
 import { HeaderTransition } from "@/components/layout/header-transition";
 import { ConsistentButton } from "@/components/shared/consistent-button";
 import { InfiniteLogoCarousel } from "@/components/shared/infinite-logo-carousel";
@@ -25,7 +25,7 @@ export function HeroSection({ isLoading }: HeroSectionProps) {
       id="hero"
       className="min-h-dvh flex flex-col justify-center relative overflow-hidden w-full px-4"
     >
-      <DynamicBackground />
+      <InfiniteGrid />
 
       <motion.div
         className="text-center z-10 max-w-4xl w-full mx-auto"

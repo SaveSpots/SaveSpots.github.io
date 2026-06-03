@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion"
 import { AnimatedSection } from "@/components/shared/animated-section"
+import { InfiniteGrid } from "@/components/layout/infinite-grid"
 import { ConsistentButton } from "@/components/shared/consistent-button"
 import { ContactForm } from "@/components/contact-form"
 import Link from "next/link";
@@ -14,9 +15,15 @@ const fadeInUp = {
 
 export function ContactSection() {
   return (
-    <section id="contact" className="py-20 px-4 bg-theme-red">
+    <section
+      id="contact"
+      className="relative overflow-hidden py-24 px-4 bg-theme-red"
+    >
+      <InfiniteGrid className="opacity-40" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-theme-red-dark/60 to-transparent" />
+
       <AnimatedSection>
-        <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
+        <div className="relative z-10 max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
           <div className="text-center md:text-left">
             <motion.h2
               className="text-4xl md:text-6xl font-extrabold mb-8 tracking-tight text-white"
