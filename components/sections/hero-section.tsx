@@ -68,17 +68,8 @@ export function HeroSection({ isLoading }: HeroSectionProps) {
             ease: "easeOut",
           }}
         >
-            <Link href="https://savespots.fillout.com/volunteer" target="_blank">
-            <ConsistentButton
-              variant="primary"
-              aria-label="Join our research team"
-            >
-              Join Our Research Team
-            </ConsistentButton>
-            </Link>
-
           <Link href="https://savespots.fillout.com/savebox" target="_blank">
-            <ConsistentButton variant="secondary">
+            <ConsistentButton variant="primary">
               Host a SaveBox at Your Location
             </ConsistentButton>
           </Link>
