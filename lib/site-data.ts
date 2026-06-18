@@ -206,14 +206,14 @@ export const researchers: Researcher[] = [
     city: "Baltimore, MD",
     bio: "Graduated Fall 2025 from the University of Illinois Chicago with a BS in Biochemistry. Studies harm reduction policy and strategy in Baltimore.",
     image: "/assets/researchers/imaad-khan.jpg", // TODO ASSET
-    linkedin: "",
+    linkedin: "https://www.linkedin.com/in/imaad-khan-987a421a9/",
   },
   {
     name: "Faisal Anwar",
     city: "Philadelphia, PA",
     bio: "Georgia Tech BS in Neuroscience, 2024. A healthcare consultant at ZS Associates studying harm reduction policy in Philadelphia.",
     image: "/assets/researchers/faisal-anwar.jpg", // TODO ASSET
-    linkedin: "",
+    linkedin: "https://www.linkedin.com/in/faisalxanwar/",
   },
   {
     name: "Ibrahim Syed",
