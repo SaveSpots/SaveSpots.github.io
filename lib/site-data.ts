@@ -170,10 +170,10 @@ export const team: Person[] = [
     linkedin: "",
   },
   {
-    name: "Ishaan", // CONFIRM full name
-    role: "Financial Operations Manager",
-    bio: "Add a short bio.", // CONFIRM
-    image: "/assets/team/ishaan.jpg", // TODO ASSET
+    name: "Ishan Patel",
+    role: "Financial Manager",
+    bio: "Add a short bio.", // CONFIRM: Ishan's bio
+    image: "/assets/team/ishan.jpg", // TODO ASSET
     linkedin: "",
   },
 ];
@@ -269,25 +269,14 @@ export const partners: Partner[] = [
     name: "Illinois Department of Public Health",
     logo: "/assets/logos/idph.png",
     blurb:
-      "Add how IDPH supports SaveSpots (e.g. naloxone supply, guidance, data).", // CONFIRM
-    url: "",
-  },
-  {
-    name: "Narcan Direct",
-    logo: "/assets/logos/narcandirectreallogo.png",
-    blurb: "Add how Narcan Direct supports SaveSpots.", // CONFIRM
+      "IDPH funds the naloxone that stocks our SaveBoxes, supplying the Narcan we distribute across Chicago.",
     url: "",
   },
   {
     name: "City of Chicago",
     logo: "/assets/logos/cityofchicagofr.png",
-    blurb: "Add how the City of Chicago partnership works.", // CONFIRM
-    url: "",
-  },
-  {
-    name: "State of Illinois",
-    logo: "/assets/logos/seal.png",
-    blurb: "Add how this partnership works.", // CONFIRM
+    blurb:
+      "We pitched SaveSpots to the City of Chicago and received authorization to use city-funded naloxone, so every SaveKit is stocked with city-backed Narcan.",
     url: "",
   },
 ];

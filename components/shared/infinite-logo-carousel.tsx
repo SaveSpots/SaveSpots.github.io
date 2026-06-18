@@ -4,9 +4,7 @@ import { motion } from "framer-motion";
 
 export function InfiniteLogoCarousel() {
   const logos = [
-    { src: "./assets/logos/idph.png", alt: "IDPH logo" },
-    { src: "./assets/logos/seal.png", alt: "Illinois logo" },
-    { src: "./assets/logos/narcandirectreallogo.png", alt: "Narcan Direct logo" },
+    { src: "./assets/logos/idph.png", alt: "Illinois Department of Public Health logo" },
     { src: "./assets/logos/cityofchicagofr.png", alt: "City of Chicago logo" },
   ];
 
