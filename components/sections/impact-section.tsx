@@ -58,10 +58,7 @@ export function OurImpactSection() {
             whileInView="animate"
             viewport={{ once: true }}
           >
-            <span className="mb-4 inline-block rounded-full border border-white/30 bg-white/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-white/80 backdrop-blur-sm">
-              On the ground
-            </span>
-            <h2 className="text-5xl md:text-6xl font-extrabold text-white tracking-tight">
+            <h2 className="font-display text-5xl md:text-6xl font-extrabold text-white tracking-tight">
               Our Impact, Visualized
             </h2>
             <p className="text-xl md:text-2xl text-white/90 mt-6 max-w-3xl mx-auto text-balance">

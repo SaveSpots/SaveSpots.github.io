@@ -10,9 +10,15 @@ import { Footer } from "@/components/layout/footer";
 import { AnimatedSection } from "@/components/shared/animated-section";
 
 import { HeroSection } from "@/components/sections/hero-section";
-import { WhyUs } from "@/components/sections/why-us";
+import { MissionSection } from "@/components/sections/mission-section";
+import { WhatWeMakeSection } from "@/components/sections/what-we-make";
 import { ServicesSection } from "@/components/sections/services-section";
 import { OurImpactSection } from "@/components/sections/impact-section";
+import { TeamSection } from "@/components/sections/team-section";
+import { ResearchDepartment } from "@/components/sections/research-department";
+import { PartnersSection } from "@/components/sections/partners-section";
+import { GallerySection } from "@/components/sections/gallery-section";
+import { SocialSection } from "@/components/sections/social-section";
 import { ContactSection } from "@/components/sections/contact-section";
 
 export default function HomePage() {
@@ -49,8 +55,14 @@ export default function HomePage() {
         <SmartNavigation />
         <HeroSection isLoading={isLoading} />
         <OurImpactSection />
-        <WhyUs />
+        <MissionSection />
+        <WhatWeMakeSection />
         <ServicesSection />
+        <TeamSection />
+        <ResearchDepartment />
+        <PartnersSection />
+        <GallerySection />
+        <SocialSection />
         <ContactSection />
         <AnimatedSection>
           <Footer />

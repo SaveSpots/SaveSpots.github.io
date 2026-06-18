@@ -11,7 +11,8 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["Helvetica", "Arial", "sans-serif"],
+        sans: ["var(--font-sans)", "system-ui", "sans-serif"],
+        display: ["var(--font-display)", "var(--font-sans)", "sans-serif"],
       },
       colors: {
         background: "hsl(var(--background))",
@@ -72,6 +73,12 @@ const config: Config = {
         "button-orange": {
           start: "#FF8C00", // Darker orange for gradient start
           end: "#FFA500", // Lighter orange for gradient end
+        },
+        // Warm off-white surface for dense "chapter" sections, within the
+        // red brand family. Not a theme flip, a deliberate reading surface.
+        cream: {
+          DEFAULT: "#FBF6F3",
+          dark: "#F2E9E3",
         },
       },
       borderRadius: {

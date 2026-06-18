@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { AnimatedSection } from "@/components/shared/animated-section"
 import { InfiniteGrid } from "@/components/layout/infinite-grid"
 import { Search, HandHeart, BrainCircuit } from "lucide-react"
+import { howItWorks } from "@/lib/site-data"
 
 const fadeInUp = {
   initial: { opacity: 0, y: 60 },
@@ -20,30 +21,10 @@ const staggerContainer = {
   },
 }
 
+const stepIcons = [Search, HandHeart, BrainCircuit];
+
 export function ServicesSection() {
-  const services = [
-    {
-      step: "01",
-      title: "Pinpoint Areas of Need",
-      description:
-        "We use publicly available governmental and reliable non-governmental data to identify blocks in need of SaveBoxes",
-      icon: Search,
-    },
-    {
-      step: "02",
-      title: "Mass Outreach and Distribution",
-      description:
-        "Use a network of dedicated students and volunteers to reach out to local businesses and community centers to inquire about placing SaveBoxes in high-traffic, easily accessible locations.",
-      icon: HandHeart,
-    },
-    {
-      step: "03",
-      title: "Getting Smarter",
-      description:
-        "Continuously monitor and analyze the performance of each SaveBox location, regularly connecting with the people hosting SaveBoxes to optimize placement and education to ensure maximum impact.",
-      icon: BrainCircuit,
-    },
-  ];
+  const services = howItWorks.map((s, i) => ({ ...s, icon: stepIcons[i] }));
 
   return (
     <section
@@ -54,20 +35,8 @@ export function ServicesSection() {
 
       <AnimatedSection>
         <div className="relative z-10 max-w-7xl mx-auto">
-          <motion.span
-            className="mb-4 flex justify-center"
-            variants={fadeInUp}
-            initial="initial"
-            whileInView="animate"
-            viewport={{ once: true }}
-          >
-            <span className="rounded-full border border-white/30 bg-white/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-white/80 backdrop-blur-sm">
-              How it works
-            </span>
-          </motion.span>
-
           <motion.h2
-            className="text-4xl md:text-6xl font-extrabold mb-16 text-center tracking-tight text-white"
+            className="font-display text-4xl md:text-6xl font-extrabold mb-16 text-center tracking-tight text-white"
             variants={fadeInUp}
             initial="initial"
             whileInView="animate"

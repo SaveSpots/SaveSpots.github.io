@@ -32,7 +32,7 @@ export function HeroSection({ isLoading }: HeroSectionProps) {
         style={{ y: heroY }}
       >
         <motion.h1
-          className="text-3xl sm:text-5xl md:text-8xl font-extrabold mb-4 tracking-tight text-white break-words whitespace-normal max-w-full w-full"
+          className="font-display text-3xl sm:text-5xl md:text-8xl font-extrabold mb-4 tracking-tight text-white break-words whitespace-normal max-w-full w-full"
           initial={{ opacity: 0, y: 100 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{

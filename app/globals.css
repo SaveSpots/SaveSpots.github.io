@@ -37,9 +37,11 @@ body {
     --border: 6 70% 50%; /* Darker Red for borders */
     --input: 6 70% 50%; /* Darker Red for inputs */
     --ring: 0 0% 100%; /* White */
-    --radius: 0.5rem;
+    --radius: 0.75rem;
   }
 }
+
+/* Shape system (locked): buttons = full pill, cards = rounded-3xl, inputs = rounded-xl */
 
 @layer utilities {
   .bg-gradient-radial {

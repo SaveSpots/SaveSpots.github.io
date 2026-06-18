@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import Image from "next/image";
+import { socials } from "@/lib/site-data";
 
 export function Footer() {
   const scrollToSection = (sectionId: string) => {
@@ -13,9 +14,10 @@ export function Footer() {
 
   const navItems = [
     { id: "hero", label: "Home" },
-    { id: "impact", label: "Impact" },
-    { id: "expertise", label: "Mission" },
+    { id: "mission", label: "Mission" },
     { id: "services", label: "Process" },
+    { id: "team", label: "Team" },
+    { id: "partners", label: "Partners" },
     { id: "contact", label: "Contact" },
   ];
 
@@ -49,14 +51,22 @@ export function Footer() {
             >
               Socials
             </h4>
-            <motion.a
-              href="#"
-              className="text-white/90 hover:text-white transition-colors font-medium"
-              whileHover={{ scale: 1.05 }}
-              data-cursor="button"
-            >
-              Instagram
-            </motion.a>
+            <div className="flex flex-col space-y-2">
+              {socials.map((social) => (
+                <motion.a
+                  key={social.name}
+                  href={social.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 text-white/90 hover:text-white transition-colors font-medium"
+                  whileHover={{ scale: 1.05, x: 4 }}
+                  data-cursor="button"
+                >
+                  <social.icon />
+                  {social.name}
+                </motion.a>
+              ))}
+            </div>
           </div>
 
           {/* Links */}

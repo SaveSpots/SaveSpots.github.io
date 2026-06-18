@@ -14,7 +14,15 @@ export function SmartNavigation() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    const sections = ["hero", "impact", "expertise", "services", "contact"];
+    const sections = [
+      "hero",
+      "mission",
+      "services",
+      "team",
+      "research",
+      "partners",
+      "contact",
+    ];
     const observers = sections.map((section) => {
       const element = document.getElementById(section);
       if (!element) return null;
@@ -44,9 +52,10 @@ export function SmartNavigation() {
 
   const navItems = [
     { id: "hero", label: "Home" },
-    { id: "impact", label: "Impact" },
-    { id: "expertise", label: "Mission" },
+    { id: "mission", label: "Mission" },
     { id: "services", label: "Process" },
+    { id: "team", label: "Team" },
+    { id: "partners", label: "Partners" },
     { id: "contact", label: "Contact" },
   ];
 
@@ -85,9 +94,9 @@ export function SmartNavigation() {
       animate={{ y: 0 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
     >
-      <div className="relative w-full max-w-3xl mx-4 bg-white  border border-theme-red/50 rounded-full px-8 py-4 flex items-center justify-center min-h-16">
-        {/* Logo absolutely positioned left */}
-        <div className="flex items-center space-x-2 px-5">
+      <div className="relative w-full max-w-4xl mx-4 bg-white shadow-lg shadow-theme-red-dark/10 border border-theme-red/40 rounded-full px-6 py-3 flex items-center justify-between min-h-16">
+        {/* Logo */}
+        <div className="flex items-center space-x-2">
           <Image
             src="./assets/SaveSpotsLogo.png"
             alt="SaveSpots Logo"
