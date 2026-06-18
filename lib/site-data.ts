@@ -142,30 +142,37 @@ export interface Person {
 
 export const team: Person[] = [
   {
-    name: "Sameer Ilyas", // CONFIRM
+    name: "Sameer Ilyas",
     role: "Founder",
-    bio: "Add 1-2 sentence bio.", // CONFIRM
+    bio: "Add a short bio.", // CONFIRM: Sameer's bio
     image: "/assets/team/sameer.jpg", // TODO ASSET
     linkedin: "", // TODO
   },
   {
-    name: "Zuhair Namad", // CONFIRM spelling; CONFIRM whether there is a second co-founder ("Zuhare")
+    name: "Zuhayr Gaffoor",
     role: "Co-Founder",
-    bio: "Add 1-2 sentence bio.", // CONFIRM
-    image: "/assets/team/zuhair.jpg", // TODO ASSET
+    bio: "Co-founder of SaveSpots and an incoming senior studying biomedical sciences.",
+    image: "/assets/team/zuhayr.jpg", // TODO ASSET
     linkedin: "",
   },
   {
-    name: "Ali", // CONFIRM full name
-    role: "Head of Research",
-    bio: "Add 1-2 sentence bio.", // CONFIRM
+    name: "Hammad Ansari",
+    role: "Co-Founder",
+    bio: "Co-founder of SaveSpots and an incoming sophomore at the University of Illinois Chicago.",
+    image: "/assets/team/hammad.jpg", // TODO ASSET (none yet)
+    linkedin: "",
+  },
+  {
+    name: "Ali Ilyas",
+    role: "Director of Research",
+    bio: "UT Dallas BS in Biology, 2023. An AEMT who leads the SaveSpots research department, studying harm reduction strategy across Dallas County.",
     image: "/assets/team/ali.jpg", // TODO ASSET
     linkedin: "",
   },
   {
     name: "Ishaan", // CONFIRM full name
     role: "Financial Operations Manager",
-    bio: "Add 1-2 sentence bio.", // CONFIRM
+    bio: "Add a short bio.", // CONFIRM
     image: "/assets/team/ishaan.jpg", // TODO ASSET
     linkedin: "",
   },
@@ -188,31 +195,59 @@ export interface Researcher {
 
 export const researchers: Researcher[] = [
   {
-    name: "Researcher name", // CONFIRM
-    city: "Chicago, IL", // CONFIRM
-    bio: "Researching local harm reduction strategy. Add a short bio.",
-    image: "/assets/researchers/placeholder-1.jpg", // TODO ASSET
+    name: "Ali Ilyas",
+    city: "Dallas County, TX",
+    bio: "UT Dallas BS in Biology, 2023. An AEMT and Director of Research at SaveSpots, studying harm reduction strategy across Dallas County.",
+    image: "/assets/researchers/ali-ilyas.jpg", // TODO ASSET
     linkedin: "",
   },
   {
-    name: "Researcher name", // CONFIRM
-    city: "City, ST", // CONFIRM
-    bio: "Researching local harm reduction strategy. Add a short bio.",
-    image: "/assets/researchers/placeholder-2.jpg", // TODO ASSET
+    name: "Imaad Khan",
+    city: "Baltimore, MD",
+    bio: "Graduated Fall 2025 from the University of Illinois Chicago with a BS in Biochemistry. Studies harm reduction policy and strategy in Baltimore.",
+    image: "/assets/researchers/imaad-khan.jpg", // TODO ASSET
     linkedin: "",
   },
   {
-    name: "Researcher name", // CONFIRM
-    city: "City, ST", // CONFIRM
-    bio: "Researching local harm reduction strategy. Add a short bio.",
-    image: "/assets/researchers/placeholder-3.jpg", // TODO ASSET
+    name: "Faisal Anwar",
+    city: "Philadelphia, PA",
+    bio: "Georgia Tech BS in Neuroscience, 2024. A healthcare consultant at ZS Associates studying harm reduction policy in Philadelphia.",
+    image: "/assets/researchers/faisal-anwar.jpg", // TODO ASSET
     linkedin: "",
   },
   {
-    name: "Researcher name", // CONFIRM
-    city: "City, ST", // CONFIRM
-    bio: "Researching local harm reduction strategy. Add a short bio.",
-    image: "/assets/researchers/placeholder-4.jpg", // TODO ASSET
+    name: "Ibrahim Syed",
+    city: "Houston, TX",
+    bio: "Neuroscience student at UT Dallas and a volunteer with EPIC Medical Clinic. Studies harm reduction strategy in Houston.",
+    image: "/assets/researchers/ibrahim-syed.jpg", // TODO ASSET
+    linkedin: "",
+  },
+  {
+    name: "Abdallah Sakallah",
+    city: "New York City & Long Island, NY",
+    bio: "Kinesiology freshman at the University of Florida and a volunteer with Young Muslims and the MSA. Studies harm reduction in New York City and Long Island.",
+    image: "/assets/researchers/abdallah-sakallah.jpg", // TODO ASSET
+    linkedin: "",
+  },
+  {
+    name: "Tawfic A. Elghor",
+    city: "St. Louis, MO",
+    bio: "Benedictine University BS in Health Science, 2025. A dental assistant studying harm reduction strategy in St. Louis.",
+    image: "/assets/researchers/tawfic-elghor.jpg", // TODO ASSET
+    linkedin: "",
+  },
+  {
+    name: "Maaz Suglatwala",
+    city: "Chicago, IL",
+    bio: "Neuroscience freshman at Lake Forest College and a Young Muslims volunteer. Studies harm reduction policy in his home city of Chicago.",
+    image: "/assets/researchers/maaz-suglatwala.jpg", // TODO ASSET
+    linkedin: "",
+  },
+  {
+    name: "Rizwan Mansoor",
+    city: "Dallas, TX", // CONFIRM research city (bio was cut off)
+    bio: "BS in Public Health from Nova Southeastern, 2025, and a Qalam Seminary graduate in Classical Arabic. Works as a free-clinic MA studying harm reduction strategy.",
+    image: "/assets/researchers/rizwan-mansoor.jpg", // TODO ASSET
     linkedin: "",
   },
 ];

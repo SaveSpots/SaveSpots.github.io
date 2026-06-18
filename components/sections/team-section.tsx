@@ -28,7 +28,7 @@ export function TeamSection() {
           </p>
         </motion.div>
 
-        <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-16 grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
           {team.map((person, i) => (
             <motion.article
               key={person.name + i}
