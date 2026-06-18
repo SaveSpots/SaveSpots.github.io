@@ -111,6 +111,25 @@ body {
   }
 }
 
+/* MapLibre popup: strip default chrome so our styled card is the only box */
+.maplibregl-popup-content {
+  padding: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+.maplibregl-popup-tip {
+  display: none !important;
+}
+.maplibregl-popup-close-button {
+  display: none !important;
+}
+/* Soften the attribution + controls so the map reads clean */
+.maplibregl-ctrl-attrib {
+  font-size: 10px;
+  border-radius: 9999px !important;
+}
+
 * {
   border-color: hsl(var(--border));
 }

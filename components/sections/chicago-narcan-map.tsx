@@ -1,5 +1,6 @@
 "use client";
 
+import { Clock, ArrowUpRight } from "lucide-react";
 import {
   Map,
   MapMarker,
@@ -182,55 +183,61 @@ const bounds: [[number, number], [number, number]] = [
   [Math.max(...lngs), Math.max(...lats)],
 ];
 
-// A glowing brand-red pin used for every SaveSpot.
+// A clean brand-red location pin used for every SaveSpot.
 function SaveSpotPin() {
   return (
     <div className="group relative grid place-items-center">
-      <span className="absolute h-6 w-6 animate-ping rounded-full bg-[#ff4d5e]/40" />
-      <span className="relative block h-3.5 w-3.5 rounded-full bg-[#ff4d5e] ring-2 ring-white shadow-[0_0_10px_2px_rgba(255,77,94,0.7)] transition-transform group-hover:scale-125" />
+      <span className="absolute h-7 w-7 animate-ping rounded-full bg-[#5a2532]/25" />
+      <span className="relative block h-4 w-4 rounded-full bg-[#5a2532] ring-[3px] ring-white shadow-[0_2px_8px_rgba(67,27,38,0.45)] transition-transform duration-200 group-hover:scale-125" />
     </div>
   );
 }
 
 export default function ChicagoNarcanMap() {
   return (
-    <div className="relative h-[400px] w-full overflow-hidden rounded-xl shadow-2xl ring-1 ring-white/10 md:h-[500px]">
-      <Map
-        theme="dark"
-        bounds={bounds}
-        fitBoundsOptions={{ padding: 48 }}
-        className="h-full w-full"
-      >
-        <MapControls position="bottom-right" showZoom showFullscreen />
+    <Map
+      theme="light"
+      bounds={bounds}
+      fitBoundsOptions={{ padding: 56 }}
+      className="h-full w-full"
+    >
+      <MapControls position="bottom-right" showZoom showFullscreen />
 
-        {narcanLocations.map((loc) => (
-          <MapMarker key={loc.name} longitude={loc.lng} latitude={loc.lat}>
-            <MarkerContent>
-              <SaveSpotPin />
-            </MarkerContent>
-            <MarkerPopup closeButton className="max-w-[240px]">
-              <p className="text-sm font-bold text-[#5a2532]">{loc.name}</p>
-              <p className="mt-0.5 text-xs text-neutral-600">{loc.address}</p>
-              <p className="mt-1 text-xs text-neutral-800">🕒 {loc.hours}</p>
-              {loc.notes && (
-                <p className="mt-0.5 text-[11px] italic text-neutral-500">
-                  {loc.notes}
-                </p>
-              )}
-              <a
-                href={`https://www.google.com/maps/place/${encodeURIComponent(
-                  loc.address
-                )}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-2 inline-block rounded-full bg-[#5a2532] px-3 py-1 text-[11px] font-semibold text-white transition-colors hover:bg-[#7a3b4a]"
-              >
-                Open in Google Maps →
-              </a>
-            </MarkerPopup>
-          </MapMarker>
-        ))}
-      </Map>
-    </div>
+      {narcanLocations.map((loc) => (
+        <MapMarker key={loc.name} longitude={loc.lng} latitude={loc.lat}>
+          <MarkerContent>
+            <SaveSpotPin />
+          </MarkerContent>
+          <MarkerPopup closeButton className="w-[250px] !rounded-2xl !border-theme-red/10 !p-4 shadow-xl">
+            <p className="font-display text-sm font-bold text-theme-red-dark">
+              {loc.name}
+            </p>
+            <p className="mt-1 text-xs leading-relaxed text-neutral-500">
+              {loc.address}
+            </p>
+            <div className="mt-3 flex items-start gap-2 border-t border-neutral-100 pt-3 text-xs text-neutral-700">
+              <Clock className="mt-0.5 h-3.5 w-3.5 shrink-0 text-theme-red" />
+              <span>{loc.hours}</span>
+            </div>
+            {loc.notes && (
+              <p className="mt-1.5 pl-[22px] text-[11px] text-neutral-400">
+                {loc.notes}
+              </p>
+            )}
+            <a
+              href={`https://www.google.com/maps/place/${encodeURIComponent(
+                loc.address
+              )}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-theme-red px-3 py-2 text-[11px] font-semibold text-white transition-colors hover:bg-theme-red-light"
+            >
+              Open in Google Maps
+              <ArrowUpRight className="h-3.5 w-3.5" />
+            </a>
+          </MarkerPopup>
+        </MapMarker>
+      ))}
+    </Map>
   );
 }
