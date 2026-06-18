@@ -81,7 +81,7 @@ export const whatWeMake: ProcessLayer[] = [
     short: "A stocked station for kits",
     description:
       "A countertop box that holds a supply of SaveKits. Hosted at a partner location, it lets anyone take what they need, no questions asked, and signals that this is a safe place to find help.",
-    image: "/assets/gallery/savebox.jpg", // TODO ASSET: photo of a SaveBox on a counter
+    image: "/assets/gallery/savebox.jpg",
     imageAlt: "A SaveBox stocked with SaveKits on a counter",
   },
   {
@@ -90,7 +90,7 @@ export const whatWeMake: ProcessLayer[] = [
     short: "A trusted location in the community",
     description:
       "A local business or community space that hosts a SaveBox. We choose SaveSpots using public overdose and access data, so every placement reaches the blocks that need it most.",
-    image: "/assets/gallery/savespot.jpg", // TODO ASSET: storefront / location photo
+    image: "/assets/gallery/savespot.jpg",
     imageAlt: "A neighborhood business hosting a SaveSpot",
   },
 ];
@@ -146,7 +146,7 @@ export const team: Person[] = [
     role: "Founder",
     bio: "Add a short bio.", // CONFIRM: Sameer's bio
     image: "/assets/team/sameer.jpg", // TODO ASSET
-    linkedin: "", // TODO
+    linkedin: "https://www.linkedin.com/in/sameer-ilyas-453b5b1b5/",
   },
   {
     name: "Zuhayr Gaffoor",
@@ -167,7 +167,7 @@ export const team: Person[] = [
     role: "Director of Research",
     bio: "UT Dallas BS in Biology, 2023. An AEMT who leads the SaveSpots research department, studying harm reduction strategy across Dallas County.",
     image: "/assets/team/ali.jpg", // TODO ASSET
-    linkedin: "",
+    linkedin: "https://www.linkedin.com/in/ali-ilyas-7b002b1a3/",
   },
   {
     name: "Ishan Patel",
@@ -199,7 +199,7 @@ export const researchers: Researcher[] = [
     city: "Dallas County, TX",
     bio: "UT Dallas BS in Biology, 2023. An AEMT and Director of Research at SaveSpots, studying harm reduction strategy across Dallas County.",
     image: "/assets/researchers/ali-ilyas.jpg", // TODO ASSET
-    linkedin: "",
+    linkedin: "https://www.linkedin.com/in/ali-ilyas-7b002b1a3/",
   },
   {
     name: "Imaad Khan",
@@ -292,12 +292,10 @@ export interface GalleryItem {
 }
 
 export const gallery: GalleryItem[] = [
-  { image: "/assets/gallery/g1.jpg", caption: "Assembling SaveKits" }, // TODO ASSET
-  { image: "/assets/gallery/g2.jpg", caption: "A stocked SaveBox" }, // TODO ASSET
-  { image: "/assets/gallery/g3.jpg", caption: "Placing a SaveSpot" }, // TODO ASSET
-  { image: "/assets/gallery/g4.jpg", caption: "On the ground in Chicago" }, // TODO ASSET
-  { image: "/assets/gallery/g5.jpg", caption: "Community partners" }, // TODO ASSET
-  { image: "/assets/gallery/g6.jpg", caption: "The team" }, // TODO ASSET
+  { image: "/assets/gallery/savebox.jpg", caption: "A stocked SaveBox at a Chicago bar" },
+  { image: "/assets/gallery/community.jpg", caption: "Bringing SaveBoxes to new partners" },
+  { image: "/assets/gallery/recovery.jpg", caption: "Demonstrating the recovery position" },
+  { image: "/assets/gallery/savespot.jpg", caption: "A new SaveSpot on W Madison St" },
 ];
 
 /* ----------------------------------------------------------------------------
@@ -315,17 +313,30 @@ export interface SocialLink {
 export const socials: SocialLink[] = [
   {
     name: "Instagram",
-    handle: "@savespots", // CONFIRM
-    url: "https://instagram.com/savespots", // CONFIRM
+    handle: "@savespotsnow",
+    url: "https://www.instagram.com/savespotsnow/",
     icon: FaInstagram,
   },
   {
     name: "LinkedIn",
-    handle: "SaveSpots", // CONFIRM
-    url: "https://www.linkedin.com/company/savespots", // CONFIRM
+    handle: "SaveSpots",
+    url: "https://www.linkedin.com/company/savespots",
     icon: FaLinkedin,
   },
 ];
+
+/**
+ * Live Instagram feed.
+ * The site is a static export (no backend), so the feed is rendered by a
+ * third-party widget that auto-syncs from @savespotsnow. Recommended: Behold
+ * (https://behold.so) - free, fast, no API token in the browser.
+ *
+ * To turn it on:
+ *  1. Sign up at behold.so and connect the @savespotsnow Instagram account.
+ *  2. Create a widget, copy its Feed ID.
+ *  3. Paste it below. Until then, the Social section shows the follow cards.
+ */
+export const instagramFeedId = ""; // e.g. "abcd1234-..." from Behold
 
 /* ----------------------------------------------------------------------------
  * Calls to action (kept centralized so labels stay consistent everywhere)

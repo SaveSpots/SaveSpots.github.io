@@ -1,14 +1,37 @@
 "use client";
 
+import { createElement, useEffect } from "react";
 import { motion } from "framer-motion";
 import { FaArrowRightLong } from "react-icons/fa6";
-import { socials } from "@/lib/site-data";
+import { socials, instagramFeedId } from "@/lib/site-data";
 
 const fadeInUp = {
   initial: { opacity: 0, y: 40 },
   whileInView: { opacity: 1, y: 0 },
   viewport: { once: true, amount: 0.3 },
 };
+
+/** Live Instagram feed via the Behold widget (auto-syncs from @savespotsnow). */
+function InstagramFeed() {
+  useEffect(() => {
+    if (!instagramFeedId) return;
+    const scriptId = "behold-widget-script";
+    if (document.getElementById(scriptId)) return;
+    const s = document.createElement("script");
+    s.id = scriptId;
+    s.type = "module";
+    s.src = "https://w.behold.so/widget.js";
+    document.body.appendChild(s);
+  }, []);
+
+  if (!instagramFeedId) return null;
+
+  return (
+    <motion.div className="mt-14" {...fadeInUp}>
+      {createElement("behold-widget", { "feed-id": instagramFeedId })}
+    </motion.div>
+  );
+}
 
 export function SocialSection() {
   return (
@@ -22,9 +45,13 @@ export function SocialSection() {
             Follow the work
           </h2>
           <p className="mt-6 text-lg leading-relaxed text-theme-red-dark/70">
-            We share placements, milestones, and what we are learning as we go.
+            New SaveSpots, milestones, and what we are learning, straight from
+            the field.
           </p>
         </motion.div>
+
+        {/* Live Instagram feed appears here once the Behold feed ID is set */}
+        <InstagramFeed />
 
         <div className="mt-14 grid gap-6 md:grid-cols-2">
           {socials.map((social, i) => {
@@ -57,9 +84,6 @@ export function SocialSection() {
             );
           })}
         </div>
-
-        {/* Hook for a live post feed once handles are confirmed.
-            Embed Instagram/LinkedIn widgets or a Curator.io / EmbedSocial feed here. */}
       </div>
     </section>
   );
