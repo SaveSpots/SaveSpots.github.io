@@ -153,14 +153,14 @@ export const team: Person[] = [
     role: "Co-Founder",
     bio: "Co-founder of SaveSpots and an incoming senior studying biomedical sciences.",
     image: "/assets/team/zuhayr.jpg", // TODO ASSET
-    linkedin: "",
+    linkedin: "https://www.linkedin.com/in/zuhayr-gaffoor-6a9115276/",
   },
   {
     name: "Hammad Ansari",
     role: "Co-Founder",
     bio: "Co-founder of SaveSpots and an incoming sophomore at the University of Illinois Chicago.",
     image: "/assets/team/hammad.jpg", // TODO ASSET (none yet)
-    linkedin: "",
+    linkedin: "https://www.linkedin.com/in/hammad-ansari-8a3a49308/",
   },
   {
     name: "Ali Ilyas",
@@ -174,7 +174,7 @@ export const team: Person[] = [
     role: "Financial Manager",
     bio: "Add a short bio.", // CONFIRM: Ishan's bio
     image: "/assets/team/ishan.jpg", // TODO ASSET
-    linkedin: "",
+    linkedin: "https://www.linkedin.com/in/ishan-patel-845043217/",
   },
 ];
 
@@ -227,14 +227,14 @@ export const researchers: Researcher[] = [
     city: "New York City & Long Island, NY",
     bio: "Kinesiology freshman at the University of Florida and a volunteer with Young Muslims and the MSA. Studies harm reduction in New York City and Long Island.",
     image: "/assets/researchers/abdallah-sakallah.jpg", // TODO ASSET
-    linkedin: "",
+    linkedin: "https://www.linkedin.com/in/abdallah-sakallah-894923377/",
   },
   {
     name: "Tawfic A. Elghor",
     city: "St. Louis, MO",
     bio: "Benedictine University BS in Health Science, 2025. A dental assistant studying harm reduction strategy in St. Louis.",
     image: "/assets/researchers/tawfic-elghor.jpg", // TODO ASSET
-    linkedin: "",
+    linkedin: "https://www.linkedin.com/in/tawfic-elghor-356a7b24b/",
   },
   {
     name: "Maaz Suglatwala",
@@ -248,7 +248,7 @@ export const researchers: Researcher[] = [
     city: "Dallas, TX", // CONFIRM research city (bio was cut off)
     bio: "BS in Public Health from Nova Southeastern, 2025, and a Qalam Seminary graduate in Classical Arabic. Works as a free-clinic MA studying harm reduction strategy.",
     image: "/assets/researchers/rizwan-mansoor.jpg", // TODO ASSET
-    linkedin: "",
+    linkedin: "https://www.linkedin.com/in/rizwan-mansoor-67a41b163/",
   },
 ];
 
