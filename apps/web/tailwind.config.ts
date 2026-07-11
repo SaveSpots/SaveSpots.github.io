@@ -1,7 +1,10 @@
 import type { Config } from "tailwindcss"
+import brandPreset from "@savespots/tokens/tailwind-preset"
 
 const config: Config = {
   // Removed darkMode: ["class"] as we are removing dark colors entirely
+  // Brand palette (theme-red / cream / button-orange) comes from the shared preset.
+  presets: [brandPreset as Partial<Config>],
   content: [
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -65,21 +68,7 @@ const config: Config = {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
-        "theme-red": {
-          DEFAULT: "#5a2532", // deep warm brick red, not purple
-          light: "	#7a3b4a", // lighter coral
-          dark: "#431b26", // darker warm brick
-        },
-        "button-orange": {
-          start: "#FF8C00", // Darker orange for gradient start
-          end: "#FFA500", // Lighter orange for gradient end
-        },
-        // Warm off-white surface for dense "chapter" sections, within the
-        // red brand family. Not a theme flip, a deliberate reading surface.
-        cream: {
-          DEFAULT: "#FBF6F3",
-          dark: "#F2E9E3",
-        },
+        // theme-red / button-orange / cream now come from @savespots/tokens preset.
       },
       borderRadius: {
         lg: "var(--radius)",
