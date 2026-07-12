@@ -7,6 +7,12 @@
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#5a2532"
+    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "org.savespots.app",
@@ -16,7 +22,11 @@
     },
     "android": {
       "package": "org.savespots.app",
-      "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"]
+      "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"],
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#FBF6F3"
+      }
     },
     "plugins": [
       "expo-router",
