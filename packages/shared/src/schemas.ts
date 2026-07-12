@@ -1,53 +1,74 @@
 /**
  * Portal contracts — shared by web and mobile.
  *
- * These zod schemas are the single source of truth for host/SaveBox/stock
- * shapes. Both the Next.js portal and the Expo app import them, so a change to
- * a field validates identically everywhere. Derive TS types from the schemas
- * (never hand-write a parallel interface that can drift).
+ * These zod schemas are the single source of truth for savebox/restock/user
+ * shapes. They mirror packages/shared/supabase/schema.sql. Rows come back from
+ * Supabase in snake_case; parse them here so the rest of the app sees typed data.
  */
 import { z } from "zod";
 
-/** A partner location that hosts a SaveBox. */
-export const saveSpotSchema = z.object({
+export const saveboxStatus = z.enum(["pending", "active", "retired"]);
+export type SaveboxStatus = z.infer<typeof saveboxStatus>;
+
+/** A hosted SaveBox at a location (row shape from `saveboxes`). */
+export const saveboxSchema = z.object({
   id: z.string().uuid(),
   name: z.string().min(1),
   address: z.string().min(1),
   city: z.string().min(1),
   lat: z.number(),
   lng: z.number(),
-  active: z.boolean().default(true),
-  hostUserId: z.string().uuid().nullable(),
-  createdAt: z.string(), // ISO timestamp
+  hours: z.string().nullable(),
+  status: saveboxStatus,
+  host_id: z.string().uuid().nullable(),
+  submitted_by: z.string().uuid().nullable(),
+  created_at: z.string(),
 });
-export type SaveSpot = z.infer<typeof saveSpotSchema>;
+export type Savebox = z.infer<typeof saveboxSchema>;
 
-/** A host's report of how many SaveKits remain in their box. */
-export const stockReportSchema = z.object({
+/** Row shape returned by the nearby_saveboxes() RPC (adds distance_m). */
+export const nearbySaveboxSchema = saveboxSchema
+  .omit({ host_id: true, submitted_by: true, created_at: true })
+  .extend({ distance_m: z.number() });
+export type NearbySavebox = z.infer<typeof nearbySaveboxSchema>;
+
+/** What a volunteer submits to log a NEW box for review. */
+export const newSaveboxInputSchema = z.object({
+  name: z.string().min(1, "Name required"),
+  address: z.string().min(1, "Address required"),
+  city: z.string().min(1, "City required"),
+  lat: z.number(),
+  lng: z.number(),
+  hours: z.string().optional(),
+});
+export type NewSaveboxInput = z.infer<typeof newSaveboxInputSchema>;
+
+/** A restock report row (`restocks`). */
+export const restockSchema = z.object({
   id: z.string().uuid(),
-  saveSpotId: z.string().uuid(),
+  savebox_id: z.string().uuid(),
+  kits_remaining: z.number().int().min(0),
+  needs_restock: z.boolean(),
+  note: z.string().nullable(),
+  reported_by: z.string().uuid().nullable(),
+  reported_at: z.string(),
+});
+export type Restock = z.infer<typeof restockSchema>;
+
+/** What a volunteer submits when reporting a restock. */
+export const restockInputSchema = z.object({
+  saveboxId: z.string().uuid(),
   kitsRemaining: z.number().int().min(0),
   needsRestock: z.boolean(),
   note: z.string().max(500).optional(),
-  reportedAt: z.string(), // ISO timestamp
-  reportedBy: z.string().uuid(),
 });
-export type StockReport = z.infer<typeof stockReportSchema>;
+export type RestockInput = z.infer<typeof restockInputSchema>;
 
-/** Input a host submits from the app to file a stock report. */
-export const stockReportInputSchema = stockReportSchema.pick({
-  saveSpotId: true,
-  kitsRemaining: true,
-  needsRestock: true,
-  note: true,
-});
-export type StockReportInput = z.infer<typeof stockReportInputSchema>;
-
-/** A portal user (host or volunteer). */
-export const portalUserSchema = z.object({
+/** A portal user profile (`profiles`). */
+export const profileSchema = z.object({
   id: z.string().uuid(),
-  email: z.string().email(),
-  fullName: z.string().min(1),
+  full_name: z.string(),
   role: z.enum(["host", "volunteer", "admin"]),
+  created_at: z.string(),
 });
-export type PortalUser = z.infer<typeof portalUserSchema>;
+export type Profile = z.infer<typeof profileSchema>;

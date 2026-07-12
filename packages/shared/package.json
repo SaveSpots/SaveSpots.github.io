@@ -8,10 +8,14 @@
   "exports": {
     ".": "./src/index.ts",
     "./supabase": "./src/supabase.ts",
-    "./schemas": "./src/schemas.ts"
+    "./schemas": "./src/schemas.ts",
+    "./api": "./src/api.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.0",
     "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.0"
   }
 }

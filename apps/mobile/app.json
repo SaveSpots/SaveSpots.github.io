@@ -9,12 +9,24 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "org.savespots.app"
+      "bundleIdentifier": "org.savespots.app",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "SaveSpots uses your location to show nearby SaveBoxes and to tag a new SaveBox you submit."
+      }
     },
     "android": {
-      "package": "org.savespots.app"
+      "package": "org.savespots.app",
+      "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"]
     },
-    "plugins": ["expo-router"],
+    "plugins": [
+      "expo-router",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "SaveSpots uses your location to show nearby SaveBoxes and to tag a new SaveBox you submit."
+        }
+      ]
+    ],
     "experiments": {
       "typedRoutes": true
     }

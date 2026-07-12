@@ -1,12 +1,21 @@
 /**
- * App-level Supabase client. Uses the shared factory + Expo public env vars.
- * Set these in apps/mobile/.env:
+ * App Supabase client with React Native session persistence.
+ * Env (apps/mobile/.env):
  *   EXPO_PUBLIC_SUPABASE_URL=...
  *   EXPO_PUBLIC_SUPABASE_ANON_KEY=...
  */
-import { createSavespotsClient } from "@savespots/shared/supabase";
+import "react-native-url-polyfill/auto";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { createClient } from "@supabase/supabase-js";
 
-export const supabase = createSavespotsClient({
-  url: process.env.EXPO_PUBLIC_SUPABASE_URL ?? "",
-  anonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? "",
+const url = process.env.EXPO_PUBLIC_SUPABASE_URL ?? "";
+const anonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? "";
+
+export const supabase = createClient(url, anonKey, {
+  auth: {
+    storage: AsyncStorage,
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: false,
+  },
 });
