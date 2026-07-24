@@ -1,3 +1,8 @@
 packages:
   - "apps/*"
   - "packages/*"
+
+# Expo/Metro and EAS cloud builds need a flat node_modules — React Native's
+# resolver does not follow pnpm's symlinked layout. pnpm v10+ reads this from
+# pnpm-workspace.yaml (the old .npmrc `node-linker=` entry is ignored).
+nodeLinker: hoisted
