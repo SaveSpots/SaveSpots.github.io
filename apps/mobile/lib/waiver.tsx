@@ -64,18 +64,26 @@ function CheckRow({
   children: string;
 }) {
   return (
-    <Pressable onPress={onToggle} className="mt-4 flex-row items-start gap-3" hitSlop={8}>
+    <Pressable
+      onPress={onToggle}
+      className={
+        checked
+          ? "mt-4 flex-row items-center border-2 border-theme-red bg-theme-red/10 p-3"
+          : "mt-4 flex-row items-center border-2 border-theme-red-dark/15 bg-white p-3"
+      }
+      style={{ borderRadius: radius.input }}
+    >
       <View
         className={
           checked
-            ? "h-6 w-6 items-center justify-center bg-theme-red"
-            : "h-6 w-6 border-2 border-theme-red-dark/30 bg-white"
+            ? "h-7 w-7 items-center justify-center bg-theme-red"
+            : "h-7 w-7 border-2 border-theme-red-dark/30 bg-white"
         }
-        style={{ borderRadius: 6 }}
+        style={{ borderRadius: 8 }}
       >
-        {checked ? <Text className="text-xs font-bold text-white">✓</Text> : null}
+        {checked ? <Text className="text-sm font-bold text-white">✓</Text> : null}
       </View>
-      <Text className="flex-1 text-sm leading-5 text-theme-red-dark">{children}</Text>
+      <Text className="ml-3 flex-1 text-sm leading-5 text-theme-red-dark">{children}</Text>
     </Pressable>
   );
 }
@@ -135,11 +143,8 @@ export function WaiverScreen({
 
   return (
     <SafeAreaView className="flex-1 bg-cream" edges={["top", "bottom"]}>
-      <View className="border-b border-theme-red-dark/10 bg-white px-5 py-4">
-        <Text className="text-[11px] font-bold uppercase tracking-wider text-theme-red">
-          SaveSpots · Harm Reduction & Community Outreach
-        </Text>
-        <Text className="mt-0.5 font-display text-lg font-extrabold text-theme-red-dark">
+      <View className="border-b border-theme-red-dark/10 bg-white px-4 py-3">
+        <Text className="font-display text-lg font-extrabold text-theme-red-dark">
           Volunteer Waiver
         </Text>
         <Text className="text-xs text-theme-red-dark/60">
