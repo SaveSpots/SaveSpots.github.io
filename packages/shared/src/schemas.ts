@@ -19,6 +19,7 @@ export const saveboxSchema = z.object({
   lat: z.number(),
   lng: z.number(),
   hours: z.string().nullable(),
+  photo_url: z.string().nullable().optional(),
   status: saveboxStatus,
   host_id: z.string().uuid().nullable(),
   submitted_by: z.string().uuid().nullable(),
@@ -40,6 +41,7 @@ export const newSaveboxInputSchema = z.object({
   lat: z.number(),
   lng: z.number(),
   hours: z.string().optional(),
+  photoUrl: z.string().optional(), // required in the mobile UI
 });
 export type NewSaveboxInput = z.infer<typeof newSaveboxInputSchema>;
 

@@ -105,6 +105,7 @@ export async function submitNewSavebox(
       lat: input.lat,
       lng: input.lng,
       hours: input.hours ?? null,
+      photo_url: input.photoUrl ?? null,
       status: "pending",
       submitted_by: userId,
     })
