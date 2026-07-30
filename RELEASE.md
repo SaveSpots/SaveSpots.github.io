@@ -99,6 +99,24 @@ browser). Until you connect it in Vercel → Settings → Git, deploy with:
 npx vercel deploy --prod --yes    # from the repo root
 ```
 
+## 3b. Netlify environment variables (required at runtime)
+
+The build now succeeds without these — the portal pages are no longer
+prerendered, so nothing needs Supabase at build time. But the pages will error
+for visitors until these exist. Netlify → Site configuration → Environment
+variables:
+
+```
+NEXT_PUBLIC_SUPABASE_URL       https://xbfihrolwvafkcwyxwzk.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY  <from apps/web/.env>
+GOOGLE_MAPS_API_KEY            <from apps/web/.env.local>   # server-only, no NEXT_PUBLIC_
+```
+
+Without `GOOGLE_MAPS_API_KEY`, `/api/eta` returns 503 and both apps fall back to
+straight-line time estimates — degraded, not broken.
+
+Then verify with `./scripts/check-deploy.sh https://savespots.org`.
+
 ## 4. Security follow-ups (yours)
 
 - **Rotate the admin password.** `admin@savespots.org` / `SaveSpotsHoodTakeover12!`
