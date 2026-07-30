@@ -1,0 +1,22 @@
+# Netlify build config for the pnpm monorepo.
+#
+# The site is apps/web (Next.js). `base` makes Netlify install and build from
+# there while still resolving the workspace root for @savespots/shared and
+# @savespots/tokens.
+#
+# @netlify/plugin-nextjs is what makes SSR and API routes work. Without it the
+# site deploys as static files and /api/eta 404s, which silently degrades the
+# mobile app's drive-time estimates to straight-line guesses.
+
+[build]
+  base = "apps/web"
+  command = "pnpm build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "20"
+  # pnpm workspace packages are symlinked; Netlify needs the root lockfile.
+  PNPM_FLAGS = "--shamefully-hoist"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
