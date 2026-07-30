@@ -1,3 +1,4 @@
+export * from "./distance";
 export * from "./schemas";
 export * from "./supabase";
 export * from "./api";

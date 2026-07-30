@@ -8,7 +8,13 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import type { Session } from "@supabase/supabase-js";
+import dynamic from "next/dynamic";
 import {
+  estimateTravel,
+  fetchTravelTimes,
+  formatMiles,
+  formatRadiusMiles,
+  type TravelEstimate,
   getNearbySaveboxes,
   getProfile,
   getMySubmissions,
@@ -35,6 +41,14 @@ import { getSupabase } from "@/lib/supabase-browser";
 
 const FALLBACK = { lat: 41.8781, lng: -87.6298 }; // Chicago
 const MAP_RADIUS_M = 50000;
+
+// Leaflet touches `window` at import time, so it cannot be server-rendered.
+const NearbyMap = dynamic(() => import("@/components/nearby-map"), {
+  ssr: false,
+  loading: () => (
+    <div className="h-[360px] w-full animate-pulse rounded-2xl bg-theme-red-dark/5" />
+  ),
+});
 
 
 /** Upload a browser File to the checkin-photos bucket; returns public URL. */
@@ -387,16 +401,32 @@ function CheckinForm({
 // ---------------------------------------------------------------------------
 function BoxesTab({ userId }: { userId: string }) {
   const [boxes, setBoxes] = useState<NearbySavebox[]>([]);
+  const [origin, setOrigin] = useState(FALLBACK);
+  const [travel, setTravel] = useState<Record<string, TravelEstimate>>({});
   const [loading, setLoading] = useState(true);
   const [openId, setOpenId] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
 
   const load = useCallback(() => {
     setLoading(true);
-    const go = (lat: number, lng: number) =>
-      getNearbySaveboxes(getSupabase(), lat, lng, MAP_RADIUS_M)
-        .then(setBoxes)
+    const go = (lat: number, lng: number) => {
+      setOrigin({ lat, lng });
+      return getNearbySaveboxes(getSupabase(), lat, lng, MAP_RADIUS_M)
+        .then(async (rows) => {
+          setBoxes(rows);
+          // Routed times for the boxes actually shown. Same-origin, so baseUrl "".
+          // Only the nearest few — every destination is a billed matrix element.
+          const shown = rows.slice(0, 10);
+          const times = await fetchTravelTimes(
+            "",
+            { lat, lng },
+            shown.map((b) => ({ lat: b.lat, lng: b.lng })),
+            shown.map((b) => b.distance_m),
+          );
+          setTravel(Object.fromEntries(shown.map((b, i) => [b.id, times[i]])));
+        })
         .finally(() => setLoading(false));
+    };
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => go(pos.coords.latitude, pos.coords.longitude),
@@ -419,18 +449,40 @@ function BoxesTab({ userId }: { userId: string }) {
       {msg ? (
         <p className="rounded-xl bg-theme-red/10 p-3 text-sm font-semibold text-theme-red">{msg}</p>
       ) : null}
+      {boxes.length > 0 ? (
+        <NearbyMap
+          boxes={boxes}
+          origin={origin}
+          onSelect={(b) => {
+            setOpenId(b.id);
+            document.getElementById(`box-${b.id}`)?.scrollIntoView({
+              behavior: "smooth",
+              block: "center",
+            });
+          }}
+        />
+      ) : null}
       {boxes.length === 0 ? (
-        <p className="text-theme-red-dark/60">No active SaveSpots within 50 km.</p>
+        <p className="text-theme-red-dark/60">
+          No active SaveSpots within {formatRadiusMiles(MAP_RADIUS_M)}.
+        </p>
       ) : null}
       {boxes.map((b) => (
-        <div key={b.id} className={card}>
+        <div key={b.id} id={`box-${b.id}`} className={card}>
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <h3 className="font-display text-lg font-bold text-theme-red-dark">{b.name}</h3>
               <p className="text-sm text-theme-red-dark/70">{b.address}, {b.city}</p>
-              <p className="mt-1 text-xs font-semibold text-theme-red">
-                {(b.distance_m / 1000).toFixed(1)} km away{b.hours ? ` · ${b.hours}` : ""}
-              </p>
+              {(() => {
+                const t = travel[b.id] ?? estimateTravel(b.distance_m);
+                return (
+                  <p className="mt-1 text-sm font-bold text-theme-red">
+                    {formatMiles(t.meters)} away · {t.estimated ? "~" : ""}
+                    {t.label}
+                    {b.hours ? ` · ${b.hours}` : ""}
+                  </p>
+                );
+              })()}
             </div>
             <div className="flex gap-2">
               <a

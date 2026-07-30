@@ -11,7 +11,17 @@ import { Link, useRouter } from "expo-router";
 import * as Location from "expo-location";
 import MapView, { Marker, type MapPressEvent, type MarkerPressEvent } from "react-native-maps";
 import { colors, radius } from "@savespots/tokens";
-import { getNearbySaveboxes, type NearbySavebox } from "@savespots/shared";
+import {
+  estimateTravel,
+  fetchTravelTimes,
+  formatMiles,
+  getNearbySaveboxes,
+  type NearbySavebox,
+  type TravelEstimate,
+} from "@savespots/shared";
+
+// Where /api/eta lives. The Routes API key is server-side there, never in this app.
+const ETA_BASE = process.env.EXPO_PUBLIC_ETA_BASE_URL ?? "https://savespots.org";
 import { supabase } from "../../lib/supabase";
 
 // Chicago fallback if location permission denied (brand's home city).
@@ -54,9 +64,30 @@ export default function MapHome() {
   const [boxes, setBoxes] = useState<NearbySavebox[]>([]);
   const [origin, setOrigin] = useState<LatLng>(FALLBACK);
   const [closest, setClosest] = useState<NearbySavebox[]>([]);
+  // Routed times keyed by box id. Starts as the straight-line estimate and is
+  // replaced when /api/eta answers, so the panel never waits on the network.
+  const [travel, setTravel] = useState<Record<string, TravelEstimate>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [locationDenied, setLocationDenied] = useState(false);
+
+  /** Ask /api/eta for routed times for the shown boxes; falls back internally. */
+  const refreshTravel = useCallback(async (from: LatLng, list: NearbySavebox[]) => {
+    if (list.length === 0) return;
+    const times = await fetchTravelTimes(
+      ETA_BASE,
+      from,
+      list.map((b) => ({ lat: b.lat, lng: b.lng })),
+      list.map((b) => b.distance_m),
+    );
+    setTravel((prev) => {
+      const next = { ...prev };
+      list.forEach((b, i) => {
+        if (times[i]) next[b.id] = times[i];
+      });
+      return next;
+    });
+  }, []);
 
   const load = useCallback(async () => {
     setError(null);
@@ -78,6 +109,7 @@ export default function MapHome() {
       // Show the 3 closest boxes to the user right away (RPC returns nearest first).
       const nearest = rows.slice(0, 3);
       setClosest(nearest);
+      refreshTravel(coords, nearest);
       // Zoom to the user and their nearest boxes (not every pin in the region).
       const focus = [
         { latitude: coords.lat, longitude: coords.lng },
@@ -108,8 +140,10 @@ export default function MapHome() {
         .sort((a, b) => a.distance_m - b.distance_m)
         .slice(0, 3);
       setClosest(ranked);
+      // Times are from the tapped point, not the user, so they must be re-fetched.
+      refreshTravel(point, ranked);
     },
-    [boxes],
+    [boxes, refreshTravel],
   );
 
   const onMapPress = useCallback(
@@ -213,52 +247,71 @@ export default function MapHome() {
         </View>
       ) : null}
 
-      {/* Bottom panel: 3 closest boxes to the tapped point */}
+      {/* Bottom panel: 3 closest boxes to the tapped point.
+          Sized deliberately large — this is the screen's primary answer ("where do I
+          go, and how far is it"), and the map behind it is context. fitToCoordinates
+          above reserves 260px of bottom padding so pins never hide under it. */}
       {closest.length > 0 ? (
         <View
-          className="absolute bottom-4 left-4 right-4 bg-white p-3"
+          className="absolute bottom-5 left-3 right-3 bg-white px-4 pb-4 pt-3"
           style={{
             borderRadius: radius.card,
             shadowColor: "#000",
-            shadowOpacity: 0.15,
-            shadowRadius: 8,
-            shadowOffset: { width: 0, height: 2 },
-            elevation: 6,
+            shadowOpacity: 0.18,
+            shadowRadius: 16,
+            shadowOffset: { width: 0, height: 4 },
+            elevation: 10,
           }}
         >
           <View className="mb-1 flex-row items-center justify-between">
-            <Text className="font-display text-base font-bold text-theme-red-dark">
+            <Text className="font-display text-xl font-bold text-theme-red-dark">
               Closest SaveSpots to you
             </Text>
-            <Pressable onPress={() => setClosest([])} hitSlop={10}>
+            <Pressable onPress={() => setClosest([])} hitSlop={16}>
               <Text className="text-sm font-semibold text-theme-red-dark/50">Close</Text>
             </Pressable>
           </View>
-          {closest.map((b) => (
-            <View
-              key={b.id}
-              className="mt-2 flex-row items-center justify-between border-t border-theme-red-dark/10 pt-2"
-            >
-              <Pressable
-                className="flex-1 pr-3 active:opacity-70"
-                onPress={() => router.push(`/(app)/box/${b.id}`)}
+          {closest.map((b) => {
+            const t = travel[b.id] ?? estimateTravel(b.distance_m);
+            return (
+              <View
+                key={b.id}
+                className="mt-3 flex-row items-center justify-between border-t border-theme-red-dark/10 pt-3"
               >
-                <Text className="font-semibold text-theme-red-dark" numberOfLines={1}>
-                  {b.name}
-                </Text>
-                <Text className="text-xs text-theme-red-dark/60" numberOfLines={1}>
-                  {(b.distance_m / 1000).toFixed(1)} km · {b.address}, {b.city}
-                </Text>
-              </Pressable>
-              <Pressable
-                onPress={() => openDirections(b)}
-                className="items-center bg-theme-red active:bg-theme-red-light"
-                style={{ borderRadius: radius.button, paddingVertical: 8, paddingHorizontal: 14 }}
-              >
-                <Text className="text-xs font-semibold text-white">Directions</Text>
-              </Pressable>
-            </View>
-          ))}
+                <Pressable
+                  className="flex-1 pr-3 active:opacity-70"
+                  onPress={() => router.push(`/(app)/box/${b.id}`)}
+                >
+                  <Text
+                    className="text-base font-semibold text-theme-red-dark"
+                    numberOfLines={1}
+                  >
+                    {b.name}
+                  </Text>
+                  {/* Distance and time lead — they're what the user came for.
+                      "~" only while this is the straight-line guess. */}
+                  <Text className="mt-0.5 text-sm font-bold text-theme-red">
+                    {formatMiles(t.meters)} · {t.estimated ? "~" : ""}
+                    {t.label}
+                  </Text>
+                  <Text className="mt-0.5 text-xs text-theme-red-dark/60" numberOfLines={1}>
+                    {b.address}, {b.city}
+                  </Text>
+                </Pressable>
+                <Pressable
+                  onPress={() => openDirections(b)}
+                  className="items-center bg-theme-red active:bg-theme-red-light"
+                  style={{
+                    borderRadius: radius.button,
+                    paddingVertical: 12,
+                    paddingHorizontal: 18,
+                  }}
+                >
+                  <Text className="text-sm font-semibold text-white">Directions</Text>
+                </Pressable>
+              </View>
+            );
+          })}
         </View>
       ) : (
         <View
