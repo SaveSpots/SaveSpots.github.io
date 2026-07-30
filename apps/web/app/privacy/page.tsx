@@ -37,8 +37,30 @@ export default function PrivacyPage() {
           <ul className="mt-3 list-disc space-y-2 pl-6">
             <li>
               <strong>Account information.</strong> When you create an account we
-              collect your email address and the name you provide. Authentication
-              is handled by our service provider, Supabase.
+              collect your email address, your name, and your phone number.
+              Authentication is handled by our service provider, Supabase.
+            </li>
+            <li>
+              <strong>Emergency contact.</strong> Volunteers provide an emergency
+              contact name and phone number at sign-up. This is used only to
+              reach someone on your behalf if you are hurt while volunteering. It
+              is never shown to other volunteers.
+            </li>
+            <li>
+              <strong>Waiver record.</strong> When you sign the volunteer waiver
+              electronically we store the name you typed as your signature, the
+              waiver version, the date and time, your device or browser
+              identifier, and your photo/media release choice. This is kept as a
+              legal record of your agreement.
+            </li>
+            <li>
+              <strong>Photos.</strong> Every check-in requires a photo of the
+              SaveBox, and submitting a new location requires a photo of the
+              spot. With your permission the app uses your camera or photo
+              library for this. Only the photo you choose is uploaded — we do not
+              access the rest of your library. These photos are stored publicly
+              so volunteers and coordinators can verify the state of a box, so
+              please avoid capturing people or anything identifying.
             </li>
             <li>
               <strong>Location.</strong> With your permission, the app uses your
@@ -49,8 +71,10 @@ export default function PrivacyPage() {
             </li>
             <li>
               <strong>Content you submit.</strong> SaveBox details you log
-              (name, address, city, hours, coordinates) and restock reports (kit
-              counts, notes) are stored so the network stays current.
+              (name, address, city, hours, coordinates) and check-in reports
+              (whether the box was there, whether it was restocked, how many
+              SaveKits you left, and any notes) are stored so the network stays
+              current.
             </li>
           </ul>
         </section>
@@ -72,11 +96,15 @@ export default function PrivacyPage() {
             Who can see it
           </h2>
           <p className="mt-3">
-            SaveBox locations and their restock status are visible to other app
-            users so volunteers can find and maintain them. Your email address
-            and account details are not shown to other users. Our service
-            provider (Supabase) stores the data on our behalf under their own
-            security and privacy terms.
+            SaveBox locations, their check-in status, and check-in photos are
+            visible to other app users so volunteers can find and maintain them.
+            Your email address, phone number, emergency contact, and waiver
+            record are not shown to other users — only you and SaveSpots
+            administrators can see them. Our service provider (Supabase) stores
+            the data on our behalf under their own security and privacy terms.
+            When the app estimates travel time to a SaveBox, the coordinates of
+            your starting point and the destination are sent to the Google Routes
+            API; no account information is included in that request.
           </p>
         </section>
 

@@ -77,34 +77,40 @@ In the Netlify dashboard for savespots.org:
      -d '{"origin":{"lat":41.87,"lng":-87.62},"destinations":[{"lat":41.85,"lng":-87.66}]}'
    ```
 
-## 4. Supabase — email verification (still off)
-
-Anyone can currently sign up with any address, real or not.
-
-1. Dashboard → Authentication → **SMTP Settings**:
-   ```
-   Host: smtp.resend.com    Port: 587
-   Username: resend
-   Password: <Resend API key>
-   Sender: noreply@savespots.org
-   ```
-   savespots.org is already verified in Resend (test send confirmed).
-2. Then Authentication → Providers → Email → **Confirm email: ON**.
-
-Order matters. Flipping confirmations on before SMTP is configured breaks
-signups — Supabase's built-in sender is rate-limited to a few per hour.
-
-## 5. Security follow-ups
+## 4. Security follow-ups (yours)
 
 - **Rotate the admin password.** `admin@savespots.org` / `SaveSpotsHoodTakeover12!`
-  was shared in a chat transcript.
+  was shared in a chat transcript. Deliberately *not* rotated automatically —
+  any replacement generated here would land in the same transcript, which is
+  security theater rather than a fix. Change it somewhere nothing is logging:
+  Supabase Dashboard → Authentication → Users → `admin@savespots.org` → reset
+  password. Same applies to the `appreview@savespots.org` demo account after
+  App Review finishes.
 - **Restrict the Google Maps key** in Cloud Console — Routes API only, plus an
-  HTTP-referrer or IP restriction. It's server-side now, but it has been exposed
-  in conversation.
-- `minimum_password_length = 6` in `supabase/config.toml` is low; 10+ is better.
+  HTTP-referrer or IP restriction. It is server-side now, but it has been
+  exposed in conversation.
 
-## Already handled
+## Already handled (verified against production)
 
-- Role-escalation vulnerability (any volunteer could PATCH themselves to admin)
-  — fixed via trigger, applied to prod, verified returns 403.
-- Check-in photos are mandatory at the DB level (`restocks.photo_url NOT NULL`).
+- **Email verification is ON.** SMTP (Resend) and `enable_confirmations` were
+  pushed together via `supabase config push`. Verified live: a new signup
+  returns no session and `confirmed_at: null`.
+- **Signup email rate limit raised 2 → 30/hour.** Supabase's default of 2 is
+  sized for its built-in test sender; with confirmations on it would have
+  silently broken onboarding at the second signup of any hour.
+- **Minimum password length 6 → 10.** Verified live: a 6-character password is
+  now rejected.
+- **Role-escalation vulnerability** (any volunteer could PATCH themselves to
+  admin) — fixed via trigger, applied to prod, verified returns 403.
+- **Check-in photos mandatory** at the DB level (`restocks.photo_url NOT NULL`).
+- **Privacy policy** updated to disclose phone number, emergency contact, waiver
+  signature record, photos, and the Google Routes API call — Apple cross-checks
+  the App Privacy questionnaire against this page.
+
+## Known-good oddity — do not "fix"
+
+`expo-doctor` reports a duplicate React and objects to `metro.config.js`. Both
+are expected: apps/web is Next 14 (React 18, hoisted to the workspace root) and
+apps/mobile is Expo 54 (React 19, local). The Metro overrides are what pin the
+app to React 19. Deduplicating would break one of the two apps. See the comment
+in `apps/mobile/metro.config.js`.
