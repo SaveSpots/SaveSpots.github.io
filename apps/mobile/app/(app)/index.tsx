@@ -69,6 +69,20 @@ export default function MapHome() {
       setOrigin(coords);
       const rows = await getNearbySaveboxes(supabase, coords.lat, coords.lng, MAP_RADIUS_M);
       setBoxes(rows);
+      // Show the 3 closest boxes to the user right away (RPC returns nearest first).
+      setClosest(rows.slice(0, 3));
+      // Fit the map so every pin is visible at once.
+      if (rows.length > 0) {
+        requestAnimationFrame(() => {
+          mapRef.current?.fitToCoordinates(
+            rows.map((b) => ({ latitude: b.lat, longitude: b.lng })),
+            {
+              edgePadding: { top: 100, right: 60, bottom: 220, left: 60 },
+              animated: true,
+            },
+          );
+        });
+      }
     } catch (e: any) {
       setError(e?.message ?? "Could not load SaveBoxes.");
     } finally {
@@ -136,9 +150,27 @@ export default function MapHome() {
             coordinate={{ latitude: b.lat, longitude: b.lng }}
             title={b.name}
             description={`${b.address}, ${b.city}`}
-            pinColor={colors.themeRed.DEFAULT}
             onPress={onMarkerPress}
-          />
+            anchor={{ x: 0.5, y: 0.5 }}
+            tracksViewChanges={false}
+          >
+            {/* Custom view instead of the default pin: Apple Maps hides
+                colliding default pins as you zoom; custom views stay visible. */}
+            <View
+              style={{
+                width: 18,
+                height: 18,
+                borderRadius: 9,
+                backgroundColor: colors.themeRed.DEFAULT,
+                borderWidth: 3,
+                borderColor: colors.white,
+                shadowColor: "#000",
+                shadowOpacity: 0.3,
+                shadowRadius: 2,
+                shadowOffset: { width: 0, height: 1 },
+              }}
+            />
+          </Marker>
         ))}
       </MapView>
 
