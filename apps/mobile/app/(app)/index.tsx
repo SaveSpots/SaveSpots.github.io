@@ -152,7 +152,6 @@ export default function MapHome() {
             description={`${b.address}, ${b.city}`}
             onPress={onMarkerPress}
             anchor={{ x: 0.5, y: 0.5 }}
-            tracksViewChanges={false}
           >
             {/* Custom view instead of the default pin: Apple Maps hides
                 colliding default pins as you zoom; custom views stay visible. */}
@@ -164,10 +163,6 @@ export default function MapHome() {
                 backgroundColor: colors.themeRed.DEFAULT,
                 borderWidth: 3,
                 borderColor: colors.white,
-                shadowColor: "#000",
-                shadowOpacity: 0.3,
-                shadowRadius: 2,
-                shadowOffset: { width: 0, height: 1 },
               }}
             />
           </Marker>
