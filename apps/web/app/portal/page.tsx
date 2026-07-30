@@ -22,7 +22,9 @@ import {
   signWaiver,
   saveOnboarding,
   onboardingInputSchema,
-  WAIVER_VERSION,
+  WAIVER_INTRO,
+  WAIVER_SECTIONS,
+  WAIVER_TITLE,
   type NearbySavebox,
   type Profile,
   type Restock,
@@ -34,18 +36,6 @@ import { getSupabase } from "@/lib/supabase-browser";
 const FALLBACK = { lat: 41.8781, lng: -87.6298 }; // Chicago
 const MAP_RADIUS_M = 50000;
 
-const WAIVER_TEXT = `SAVESPOTS VOLUNTEER WAIVER AND RELEASE OF LIABILITY (${WAIVER_VERSION})
-
-PLACEHOLDER — replace with the wording from the official SaveSpots waiver PDF.
-
-In consideration of being permitted to volunteer with SaveSpots, I acknowledge and agree to the following:
-
-1. I understand the nature of volunteer activities, including traveling to and restocking SaveBox naloxone stations, and I voluntarily accept the risks.
-2. I release and hold harmless SaveSpots, its officers, and volunteers from liability for injury or loss arising from my participation, to the fullest extent permitted by law.
-3. I confirm I am 18 or older, or have a guardian's consent.
-4. I agree to handle naloxone kits responsibly and follow all training and applicable laws.
-
-By typing my full legal name below and clicking "I agree — sign waiver", I am signing this agreement electronically and intend it to be legally binding, the same as a handwritten signature.`;
 
 /** Upload a browser File to the checkin-photos bucket; returns public URL. */
 async function uploadPhotoFile(userId: string, file: File): Promise<string> {
@@ -178,17 +168,25 @@ function AuthScreen() {
 // ---------------------------------------------------------------------------
 function WaiverGate({ userId, onSigned }: { userId: string; onSigned: () => void }) {
   const [signature, setSignature] = useState("");
+  const [isAdult, setIsAdult] = useState(false);
   const [agreed, setAgreed] = useState(false);
+  const [mediaConsent, setMediaConsent] = useState<boolean | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function sign() {
     setError(null);
+    if (!isAdult)
+      return setError(
+        "Confirm you are 18 or older. Volunteers under 18 must complete the paper form with a parent or guardian.",
+      );
+    if (mediaConsent === null)
+      return setError("Choose whether you consent to photo/media use (section 8).");
     if (signature.trim().length < 2) return setError("Type your full legal name to sign.");
     if (!agreed) return setError("Check the box to confirm you agree.");
     setBusy(true);
     try {
-      await signWaiver(getSupabase(), userId, signature.trim(), navigator.userAgent);
+      await signWaiver(getSupabase(), userId, signature.trim(), navigator.userAgent, mediaConsent);
       onSigned();
     } catch (e: any) {
       setError(e?.message ?? "Failed — try again.");
@@ -200,23 +198,67 @@ function WaiverGate({ userId, onSigned }: { userId: string; onSigned: () => void
   return (
     <div className="mx-auto mt-8 max-w-2xl">
       <div className={card}>
-        <h2 className="font-display text-2xl font-extrabold text-theme-red-dark">
-          Volunteer waiver
+        <p className="text-xs font-bold uppercase tracking-widest text-theme-red">
+          SaveSpots · Harm Reduction &amp; Community Outreach
+        </p>
+        <h2 className="mt-1 font-display text-2xl font-extrabold leading-8 text-theme-red-dark">
+          {WAIVER_TITLE}
         </h2>
         <p className="mt-1 text-sm text-theme-red-dark/70">
           One-time step — read and sign to start volunteering.
         </p>
-        <pre className="mt-4 max-h-80 overflow-y-auto whitespace-pre-wrap rounded-xl bg-cream p-4 text-sm text-theme-red-dark">
-          {WAIVER_TEXT}
-        </pre>
+
+        <div className="mt-4 max-h-96 overflow-y-auto rounded-xl bg-cream p-5">
+          <p className="text-sm leading-6 text-theme-red-dark/90">{WAIVER_INTRO}</p>
+          {WAIVER_SECTIONS.map((s) => (
+            <div key={s.title} className="mt-5">
+              <h3 className="font-display text-base font-bold text-theme-red-dark">{s.title}</h3>
+              <p className="mt-1 whitespace-pre-line text-sm leading-6 text-theme-red-dark/90">
+                {s.body}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        <p className="mt-5 text-sm font-semibold text-theme-red-dark">
+          Photo/media release (section 8) — optional
+        </p>
+        <div className="mt-2 flex gap-2">
+          {[
+            { l: "I consent", v: true },
+            { l: "I do NOT consent", v: false },
+          ].map(({ l, v }) => (
+            <button
+              key={l}
+              type="button"
+              onClick={() => setMediaConsent(v)}
+              className={
+                mediaConsent === v
+                  ? "flex-1 rounded-full bg-theme-red py-2 text-sm font-semibold text-white"
+                  : "flex-1 rounded-full border border-theme-red-dark/20 py-2 text-sm font-semibold text-theme-red-dark/70 hover:border-theme-red"
+              }
+            >
+              {l}
+            </button>
+          ))}
+        </div>
+
+        <label className="mt-4 flex cursor-pointer items-center gap-3 text-sm text-theme-red-dark">
+          <input type="checkbox" checked={isAdult} onChange={(e) => setIsAdult(e.target.checked)} className="h-5 w-5 accent-[#B03A2E]" />
+          I confirm I am 18 years of age or older.
+        </label>
+
         <label className="mt-4 block text-sm font-semibold text-theme-red-dark">
           Type your full legal name to sign
         </label>
         <input className={`${input} mt-2`} value={signature} onChange={(e) => setSignature(e.target.value)} placeholder="Full legal name" />
-        <label className="mt-4 flex cursor-pointer items-center gap-3 text-sm text-theme-red-dark">
-          <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} className="h-5 w-5 accent-[#B03A2E]" />
-          I have read the waiver and agree to sign it electronically.
+
+        <label className="mt-4 flex cursor-pointer items-start gap-3 text-sm text-theme-red-dark">
+          <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} className="mt-0.5 h-5 w-5 shrink-0 accent-[#B03A2E]" />
+          I have read this Agreement in its entirety, understand that I am giving up
+          substantial legal rights, and agree to sign it electronically.
         </label>
+
         {error ? <p className="mt-3 text-sm font-semibold text-theme-red">{error}</p> : null}
         <button className={`${btn} mt-5 w-full`} onClick={sign} disabled={busy}>
           {busy ? "..." : "I agree — sign waiver"}

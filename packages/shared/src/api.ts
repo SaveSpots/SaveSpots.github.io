@@ -264,12 +264,14 @@ export async function signWaiver(
   userId: string,
   signatureName: string,
   userAgent?: string,
+  mediaConsent?: boolean,
 ): Promise<void> {
   const { error } = await db.from("waiver_acceptances").insert({
     user_id: userId,
     waiver_version: WAIVER_VERSION,
     signature_name: signatureName,
     user_agent: userAgent ?? null,
+    media_consent: mediaConsent ?? null,
   });
   if (error) throw error;
   const { error: e2 } = await db

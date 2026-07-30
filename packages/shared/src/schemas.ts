@@ -97,7 +97,7 @@ export const profileSchema = z.object({
 export type Profile = z.infer<typeof profileSchema>;
 
 /** Current waiver text version — bump when the waiver wording changes. */
-export const WAIVER_VERSION = "v1-2026-07-30";
+export const WAIVER_VERSION = "v2-2026-07-30";
 
 /** Onboarding details collected at sign-up. */
 export const onboardingInputSchema = z.object({
