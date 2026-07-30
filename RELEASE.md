@@ -53,29 +53,33 @@ Create the app record for `org.savespots.app`, then fill in:
   > boxes maintained by community partners. It provides no medical advice,
   > diagnosis, or dosing instructions, and dispenses nothing itself.
 
-## 3. Netlify (do before submitting — the app calls this API)
+## 3. Web — deployed to Vercel, DNS still needs pointing
 
-`netlify.toml` is committed and `@netlify/plugin-nextjs` is installed. The prod
-site was serving a stale static build, so `/portal` and `/api/eta` 404'd.
+The portal is **live** at https://savespots-portal.vercel.app (Vercel project
+`savespots-portal`). All routes verified 200, and `/api/eta` returns real Google
+routing data. Env vars for production/preview/development are set on Vercel.
 
-In the Netlify dashboard for savespots.org:
+`savespots.org` still resolves to **Netlify** (18.208.88.157 / 98.84.224.111),
+serving a build ~19 days old — which is why `/portal` 404s there. Nothing in
+this repo was ever deployed to the apex domain.
 
-1. **Build settings** — clear any base/publish overrides set in the UI, so
-   `netlify.toml` wins.
-2. **Environment variables** — add all three:
-   ```
-   NEXT_PUBLIC_SUPABASE_URL       https://xbfihrolwvafkcwyxwzk.supabase.co
-   NEXT_PUBLIC_SUPABASE_ANON_KEY  <from apps/web/.env>
-   GOOGLE_MAPS_API_KEY            <from apps/web/.env.local>   # server-only, no NEXT_PUBLIC_
-   ```
-   Without `GOOGLE_MAPS_API_KEY`, `/api/eta` returns 503 and both apps fall back
-   to straight-line time estimates (degraded, not broken).
-3. **Trigger deploy**, then verify:
-   ```bash
-   curl -o /dev/null -w "%{http_code}\n" https://savespots.org/portal        # expect 200
-   curl -X POST https://savespots.org/api/eta -H 'Content-Type: application/json' \
-     -d '{"origin":{"lat":41.87,"lng":-87.62},"destinations":[{"lat":41.85,"lng":-87.66}]}'
-   ```
+**To move the domain (Netlify holds DNS):**
+
+1. Vercel → project `savespots-portal` → Settings → Domains → add
+   `savespots.org` and `www.savespots.org`.
+2. Netlify DNS for savespots.org → replace the A records with what Vercel shows
+   (apex `76.76.21.21`, `www` CNAME `cname.vercel-dns.com`).
+3. Verify: `curl -o /dev/null -w "%{http_code}\n" https://savespots.org/portal`
+
+The mobile app does **not** depend on this — `EXPO_PUBLIC_ETA_BASE_URL` points
+at the `.vercel.app` alias, which keeps working before and after the DNS move.
+
+**GitHub auto-deploy is not connected** (the CLI couldn't authorize it without a
+browser). Until you connect it in Vercel → Settings → Git, deploy with:
+
+```bash
+npx vercel deploy --prod --yes    # from the repo root
+```
 
 ## 4. Security follow-ups (yours)
 
@@ -91,6 +95,15 @@ In the Netlify dashboard for savespots.org:
   exposed in conversation.
 
 ## Already handled (verified against production)
+
+- **EAS build environment variables set** — `EXPO_PUBLIC_SUPABASE_URL`,
+  `EXPO_PUBLIC_SUPABASE_ANON_KEY`, `EXPO_PUBLIC_ETA_BASE_URL` for
+  production/preview/development. `apps/mobile/.env` is gitignored and EAS had
+  no variables, so a production build would have shipped with no Supabase
+  credentials at all — the app would have installed and then failed at login,
+  which is an automatic App Review rejection.
+- **Web portal deployed to Vercel** with all three env vars; `/api/eta` verified
+  returning live Google routing data.
 
 - **Email verification is ON.** SMTP (Resend) and `enable_confirmations` were
   pushed together via `supabase config push`. Verified live: a new signup
