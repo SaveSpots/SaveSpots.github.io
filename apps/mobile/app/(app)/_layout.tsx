@@ -19,7 +19,7 @@ export default function AppLayout() {
         ),
       }}
     >
-      <Stack.Screen name="index" options={{ title: "Nearby SaveBoxes" }} />
+      <Stack.Screen name="index" options={{ title: "SaveSpots" }} />
       <Stack.Screen name="new" options={{ title: "Log a SaveBox" }} />
       <Stack.Screen name="submissions" options={{ title: "My submissions" }} />
       <Stack.Screen name="box/[id]" options={{ title: "SaveBox" }} />
