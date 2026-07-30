@@ -63,13 +63,31 @@ routing data. Env vars for production/preview/development are set on Vercel.
 serving a build ~19 days old — which is why `/portal` 404s there. Nothing in
 this repo was ever deployed to the apex domain.
 
-**To move the domain (Netlify holds DNS):**
+**To move the domain — only the DNS record change is left.**
 
-1. Vercel → project `savespots-portal` → Settings → Domains → add
-   `savespots.org` and `www.savespots.org`.
-2. Netlify DNS for savespots.org → replace the A records with what Vercel shows
-   (apex `76.76.21.21`, `www` CNAME `cname.vercel-dns.com`).
-3. Verify: `curl -o /dev/null -w "%{http_code}\n" https://savespots.org/portal`
+`savespots.org` and `www.savespots.org` are already attached to the
+`savespots-portal` Vercel project. Vercel is waiting on DNS, which Netlify holds
+(nameservers are `dns1–4.p0*.nsone.net`).
+
+In **Netlify → Domains → savespots.org → DNS records**, replace the two apex A
+records (currently `18.208.88.157` and `98.84.224.111`) with a single:
+
+```
+A     savespots.org       76.76.21.21
+A     www.savespots.org   76.76.21.21
+```
+
+Vercel verifies automatically and issues the TLS cert within a few minutes.
+Then confirm:
+
+```bash
+curl -o /dev/null -w "%{http_code}\n" https://savespots.org/portal   # expect 200
+```
+
+Note this *moves the marketing site too* — savespots.org is currently served by
+Netlify from a build roughly 19 days old. The Vercel deployment has that same
+marketing site plus the portal, so the switch is an upgrade, but compare the two
+first if anything was ever hot-fixed directly on Netlify.
 
 The mobile app does **not** depend on this — `EXPO_PUBLIC_ETA_BASE_URL` points
 at the `.vercel.app` alias, which keeps working before and after the DNS move.
