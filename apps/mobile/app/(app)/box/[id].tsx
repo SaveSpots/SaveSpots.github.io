@@ -7,7 +7,6 @@ import {
   TextInput,
   ActivityIndicator,
   Alert,
-  Switch,
 } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { colors, radius } from "@savespots/tokens";
@@ -70,8 +69,13 @@ function checkinLabel(r: Restock): string {
         ? "Box was gone — NOT replaced"
         : "Box was gone";
   }
-  const kits = r.kits_remaining != null ? `${r.kits_remaining} kits` : "Box in place";
-  return kits;
+  if (r.needs_restock) {
+    return r.kits_given != null
+      ? `Restocked — ${r.kits_given} savekits given`
+      : "Needs restock";
+  }
+  if (r.kits_remaining != null) return `${r.kits_remaining} kits`;
+  return "Box OK — no restock needed";
 }
 
 export default function BoxDetail() {
@@ -84,7 +88,8 @@ export default function BoxDetail() {
   // Check-in form
   const [gone, setGone] = useState<boolean | null>(null);
   const [replaced, setReplaced] = useState<boolean | null>(null);
-  const [needs, setNeeds] = useState(false);
+  const [needsRestock, setNeedsRestock] = useState<boolean | null>(null);
+  const [kitsGiven, setKitsGiven] = useState("");
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -115,18 +120,32 @@ export default function BoxDetail() {
       Alert.alert("One more", "Did you replace the box? Tap Yes or No.");
       return;
     }
+    if (!gone && needsRestock === null) {
+      Alert.alert("One more", "Is a restock necessary? Tap Yes or No.");
+      return;
+    }
+    let kits: number | undefined;
+    if (!gone && needsRestock) {
+      kits = parseInt(kitsGiven, 10);
+      if (Number.isNaN(kits) || kits < 0) {
+        Alert.alert("How many savekits?", "Enter how many savekits you gave (0 or more).");
+        return;
+      }
+    }
     setBusy(true);
     try {
       await reportRestock(supabase, session!.user.id, {
         saveboxId: id!,
         boxGone: gone,
         replaced: gone ? replaced! : undefined,
-        needsRestock: needs,
+        needsRestock: !gone && needsRestock === true,
+        kitsGiven: kits,
         note: note.trim() || undefined,
       });
       setGone(null);
       setReplaced(null);
-      setNeeds(false);
+      setNeedsRestock(null);
+      setKitsGiven("");
       setNote("");
       await load();
       Alert.alert("Thanks!", "Your check-in was logged.");
@@ -188,29 +207,49 @@ export default function BoxDetail() {
           value={gone}
           onChange={(v) => {
             setGone(v);
-            if (!v) setReplaced(null);
+            if (v) {
+              setNeedsRestock(null);
+              setKitsGiven("");
+            } else {
+              setReplaced(null);
+            }
           }}
         />
 
-        {gone ? (
+        {gone === true ? (
           <>
             <Text className="mb-2 mt-4 text-sm font-semibold text-theme-red-dark">
-              Did you replace it?
+              Did you replace the box?
             </Text>
             <YesNo value={replaced} onChange={setReplaced} />
           </>
         ) : null}
 
-        <View className="mt-4 flex-row items-center justify-between">
-          <Text className="text-sm font-semibold text-theme-red-dark">
-            Needs restock soon
-          </Text>
-          <Switch
-            value={needs}
-            onValueChange={setNeeds}
-            trackColor={{ true: colors.themeRed.DEFAULT }}
-          />
-        </View>
+        {gone === false ? (
+          <>
+            <Text className="mb-2 mt-4 text-sm font-semibold text-theme-red-dark">
+              Is a restock necessary?
+            </Text>
+            <YesNo value={needsRestock} onChange={setNeedsRestock} />
+          </>
+        ) : null}
+
+        {gone === false && needsRestock === true ? (
+          <>
+            <Text className="mb-2 mt-4 text-sm font-semibold text-theme-red-dark">
+              How many savekits given?
+            </Text>
+            <TextInput
+              value={kitsGiven}
+              onChangeText={setKitsGiven}
+              placeholder="e.g. 5"
+              placeholderTextColor={colors.themeRed.dark + "80"}
+              keyboardType="number-pad"
+              className="border border-theme-red-dark/15 px-4 py-3 text-theme-red-dark"
+              style={{ borderRadius: radius.input }}
+            />
+          </>
+        ) : null}
 
         <TextInput
           value={note}

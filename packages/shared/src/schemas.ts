@@ -48,6 +48,7 @@ export const restockSchema = z.object({
   id: z.string().uuid(),
   savebox_id: z.string().uuid(),
   kits_remaining: z.number().int().min(0).nullable(),
+  kits_given: z.number().int().min(0).nullable(), // when restock was necessary
   needs_restock: z.boolean(),
   box_gone: z.boolean(),
   replaced: z.boolean().nullable(), // only meaningful when box_gone
@@ -63,6 +64,7 @@ export const restockInputSchema = z.object({
   boxGone: z.boolean(),
   replaced: z.boolean().optional(), // required in the UI when boxGone
   needsRestock: z.boolean(),
+  kitsGiven: z.number().int().min(0).optional(), // required in the UI when needsRestock
   kitsRemaining: z.number().int().min(0).optional(),
   note: z.string().max(500).optional(),
 });
