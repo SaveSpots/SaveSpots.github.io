@@ -43,23 +43,27 @@ export const newSaveboxInputSchema = z.object({
 });
 export type NewSaveboxInput = z.infer<typeof newSaveboxInputSchema>;
 
-/** A restock report row (`restocks`). */
+/** A check-in report row (`restocks`). */
 export const restockSchema = z.object({
   id: z.string().uuid(),
   savebox_id: z.string().uuid(),
-  kits_remaining: z.number().int().min(0),
+  kits_remaining: z.number().int().min(0).nullable(),
   needs_restock: z.boolean(),
+  box_gone: z.boolean(),
+  replaced: z.boolean().nullable(), // only meaningful when box_gone
   note: z.string().nullable(),
   reported_by: z.string().uuid().nullable(),
   reported_at: z.string(),
 });
 export type Restock = z.infer<typeof restockSchema>;
 
-/** What a volunteer submits when reporting a restock. */
+/** What a volunteer submits when checking in on a box. */
 export const restockInputSchema = z.object({
   saveboxId: z.string().uuid(),
-  kitsRemaining: z.number().int().min(0),
+  boxGone: z.boolean(),
+  replaced: z.boolean().optional(), // required in the UI when boxGone
   needsRestock: z.boolean(),
+  kitsRemaining: z.number().int().min(0).optional(),
   note: z.string().max(500).optional(),
 });
 export type RestockInput = z.infer<typeof restockInputSchema>;

@@ -21,6 +21,59 @@ import {
 import { supabase } from "../../../lib/supabase";
 import { useAuth } from "../../../lib/auth";
 
+/** Yes / No segmented control. */
+function YesNo({
+  value,
+  onChange,
+}: {
+  value: boolean | null;
+  onChange: (v: boolean) => void;
+}) {
+  return (
+    <View className="flex-row gap-2">
+      {[
+        { label: "Yes", v: true },
+        { label: "No", v: false },
+      ].map(({ label, v }) => {
+        const selected = value === v;
+        return (
+          <Pressable
+            key={label}
+            onPress={() => onChange(v)}
+            className={
+              selected
+                ? "flex-1 items-center bg-theme-red"
+                : "flex-1 items-center border border-theme-red-dark/20 bg-white"
+            }
+            style={{ borderRadius: radius.button, paddingVertical: 10 }}
+          >
+            <Text
+              className={
+                selected ? "font-semibold text-white" : "font-semibold text-theme-red-dark/70"
+              }
+            >
+              {label}
+            </Text>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
+
+/** One-line description of a past check-in. */
+function checkinLabel(r: Restock): string {
+  if (r.box_gone) {
+    return r.replaced === true
+      ? "Box was gone — replaced it"
+      : r.replaced === false
+        ? "Box was gone — NOT replaced"
+        : "Box was gone";
+  }
+  const kits = r.kits_remaining != null ? `${r.kits_remaining} kits` : "Box in place";
+  return kits;
+}
+
 export default function BoxDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { session } = useAuth();
@@ -28,8 +81,9 @@ export default function BoxDetail() {
   const [restocks, setRestocks] = useState<Restock[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Report form
-  const [kits, setKits] = useState("");
+  // Check-in form
+  const [gone, setGone] = useState<boolean | null>(null);
+  const [replaced, setReplaced] = useState<boolean | null>(null);
   const [needs, setNeeds] = useState(false);
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
@@ -53,24 +107,29 @@ export default function BoxDetail() {
   }, [load]);
 
   async function submit() {
-    const n = parseInt(kits, 10);
-    if (Number.isNaN(n) || n < 0) {
-      Alert.alert("Enter kit count", "How many kits are left? (0 or more)");
+    if (gone === null) {
+      Alert.alert("Quick question", "Is the box gone? Tap Yes or No.");
+      return;
+    }
+    if (gone && replaced === null) {
+      Alert.alert("One more", "Did you replace the box? Tap Yes or No.");
       return;
     }
     setBusy(true);
     try {
       await reportRestock(supabase, session!.user.id, {
         saveboxId: id!,
-        kitsRemaining: n,
+        boxGone: gone,
+        replaced: gone ? replaced! : undefined,
         needsRestock: needs,
         note: note.trim() || undefined,
       });
-      setKits("");
-      setNote("");
+      setGone(null);
+      setReplaced(null);
       setNeeds(false);
+      setNote("");
       await load();
-      Alert.alert("Reported", "Thanks — the restock was logged.");
+      Alert.alert("Thanks!", "Your check-in was logged.");
     } catch (e: any) {
       Alert.alert("Failed", e?.message ?? "Try again.");
     } finally {
@@ -93,6 +152,8 @@ export default function BoxDetail() {
     );
   }
 
+  const latest = restocks[0];
+
   return (
     <ScrollView className="flex-1 bg-cream" contentContainerStyle={{ padding: 16 }}>
       <View className="bg-white p-4" style={{ borderRadius: radius.card }}>
@@ -105,45 +166,59 @@ export default function BoxDetail() {
         {box.hours ? (
           <Text className="mt-2 text-sm text-theme-red-dark/70">Hours: {box.hours}</Text>
         ) : null}
-        {restocks[0] ? (
+        {latest ? (
           <Text className="mt-3 text-xs font-semibold text-theme-red">
-            Last restock {new Date(restocks[0].reported_at).toLocaleDateString()} ·{" "}
-            {restocks[0].kits_remaining} kits
+            Last check-in {new Date(latest.reported_at).toLocaleDateString()} ·{" "}
+            {checkinLabel(latest)}
+            {latest.needs_restock ? " · needs restock soon" : ""}
           </Text>
         ) : (
-          <Text className="mt-3 text-xs text-theme-red-dark/50">No restocks logged yet.</Text>
+          <Text className="mt-3 text-xs text-theme-red-dark/50">No check-ins yet.</Text>
         )}
       </View>
 
-      {/* Report restock */}
+      {/* Check in */}
       <View className="mt-5 bg-white p-4" style={{ borderRadius: radius.card }}>
-        <Text className="font-display text-lg font-bold text-theme-red-dark">
-          Report a restock
+        <Text className="font-display text-lg font-bold text-theme-red-dark">Check in</Text>
+
+        <Text className="mb-2 mt-4 text-sm font-semibold text-theme-red-dark">
+          Is the box gone?
         </Text>
-        <TextInput
-          value={kits}
-          onChangeText={setKits}
-          placeholder="Kits remaining"
-          placeholderTextColor={colors.themeRed.dark + "80"}
-          keyboardType="number-pad"
-          className="mt-3 border border-theme-red-dark/15 px-4 py-3 text-theme-red-dark"
-          style={{ borderRadius: radius.input }}
+        <YesNo
+          value={gone}
+          onChange={(v) => {
+            setGone(v);
+            if (!v) setReplaced(null);
+          }}
         />
-        <View className="mt-3 flex-row items-center justify-between">
-          <Text className="text-sm text-theme-red-dark/80">Needs restock soon</Text>
+
+        {gone ? (
+          <>
+            <Text className="mb-2 mt-4 text-sm font-semibold text-theme-red-dark">
+              Did you replace it?
+            </Text>
+            <YesNo value={replaced} onChange={setReplaced} />
+          </>
+        ) : null}
+
+        <View className="mt-4 flex-row items-center justify-between">
+          <Text className="text-sm font-semibold text-theme-red-dark">
+            Needs restock soon
+          </Text>
           <Switch
             value={needs}
             onValueChange={setNeeds}
             trackColor={{ true: colors.themeRed.DEFAULT }}
           />
         </View>
+
         <TextInput
           value={note}
           onChangeText={setNote}
           placeholder="Note (optional)"
           placeholderTextColor={colors.themeRed.dark + "80"}
           multiline
-          className="mt-3 border border-theme-red-dark/15 px-4 py-3 text-theme-red-dark"
+          className="mt-4 border border-theme-red-dark/15 px-4 py-3 text-theme-red-dark"
           style={{ borderRadius: radius.input, minHeight: 60 }}
         />
         <Pressable
@@ -152,18 +227,21 @@ export default function BoxDetail() {
           className="mt-4 items-center bg-theme-red active:bg-theme-red-light"
           style={{ borderRadius: radius.button, paddingVertical: 13, opacity: busy ? 0.6 : 1 }}
         >
-          <Text className="font-semibold text-white">{busy ? "..." : "Submit report"}</Text>
+          <Text className="font-semibold text-white">
+            {busy ? "..." : "Submit check-in"}
+          </Text>
         </Pressable>
       </View>
 
       {/* History */}
       <Text className="mb-2 mt-6 font-display text-lg font-bold text-theme-red-dark">
-        Restock history
+        Check-in history
       </Text>
       {restocks.map((r) => (
         <View key={r.id} className="mb-2 bg-white p-3" style={{ borderRadius: radius.input }}>
           <Text className="text-sm font-semibold text-theme-red-dark">
-            {r.kits_remaining} kits{r.needs_restock ? " · needs restock" : ""}
+            {checkinLabel(r)}
+            {r.needs_restock ? " · needs restock soon" : ""}
           </Text>
           <Text className="text-xs text-theme-red-dark/60">
             {new Date(r.reported_at).toLocaleString()}

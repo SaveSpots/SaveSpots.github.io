@@ -71,7 +71,9 @@ export async function reportRestock(
     .from("restocks")
     .insert({
       savebox_id: input.saveboxId,
-      kits_remaining: input.kitsRemaining,
+      box_gone: input.boxGone,
+      replaced: input.boxGone ? (input.replaced ?? null) : null,
+      kits_remaining: input.kitsRemaining ?? null,
       needs_restock: input.needsRestock,
       note: input.note ?? null,
       reported_by: userId,
