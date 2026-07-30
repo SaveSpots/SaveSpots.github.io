@@ -1,0 +1,69 @@
+# Build verification on every push.
+#
+# WHY THIS EXISTS: on 2026-07-11 commit 593c32d moved the Next.js app from the
+# repo root into apps/web. The host's build settings still pointed at the root,
+# so deploys silently stopped producing new output — the live site simply froze
+# on the last good deploy and nobody noticed for 19 days, across 30 commits.
+#
+# A failed hosted build does not take a site down; it just stops updating it.
+# That failure mode is invisible from outside, so this workflow makes it visible
+# in the one place nobody can miss: a red X on the commit.
+#
+# This checks the code builds. It deliberately does NOT check that the host
+# deployed it — see scripts/check-deploy.sh for that.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-web:
+    name: Build web app
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - run: pnpm install --no-frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm --filter @savespots/web exec tsc --noEmit
+
+      # The build that broke silently in July. If the workspace layout moves
+      # again, this fails loudly instead of freezing production.
+      - name: Build
+        run: pnpm --filter @savespots/web build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder-anon-key
+
+  typecheck-mobile:
+    name: Typecheck mobile app
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - run: pnpm install --no-frozen-lockfile
+
+      - run: pnpm --filter @savespots/mobile exec tsc --noEmit
