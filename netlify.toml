@@ -20,7 +20,11 @@
   publish = ".next"
 
 [build.environment]
-  NODE_VERSION = "20"
+  # Must be >=22.13: the root package.json pins packageManager to pnpm@11.12.0,
+  # and that pnpm imports `node:sqlite`, which does not exist before Node 22.5.
+  # On Node 20 corepack installs pnpm 11 and it dies instantly with
+  # ERR_UNKNOWN_BUILTIN_MODULE before a single dependency is installed.
+  NODE_VERSION = "22"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
