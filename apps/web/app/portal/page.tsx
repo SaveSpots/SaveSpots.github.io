@@ -3,7 +3,7 @@
 /**
  * Volunteer portal (web) — same features as the mobile app so volunteers
  * without a phone can participate: sign in/up with onboarding, waiver e-sign,
- * nearby boxes with check-ins, volunteer timer, submissions, account.
+ * nearby boxes with check-ins, submissions, account.
  */
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
@@ -22,10 +22,6 @@ import {
   getProfile,
   getMySubmissions,
   getMyCheckins,
-  getActiveVolunteerSession,
-  getVolunteerSessions,
-  startVolunteerSession,
-  stopVolunteerSession,
   reportRestock,
   submitNewSavebox,
   signWaiver,
@@ -38,7 +34,6 @@ import {
   type Profile,
   type Restock,
   type Savebox,
-  type VolunteerSession,
 } from "@savespots/shared";
 import { getSupabase } from "@/lib/supabase-browser";
 
@@ -78,18 +73,6 @@ function checkinLabel(r: Restock): string {
       : "Needs restock";
   }
   return "Box OK — no restock needed";
-}
-
-function fmtDuration(ms: number): string {
-  const s = Math.max(0, Math.floor(ms / 1000));
-  const h = Math.floor(s / 3600);
-  const m = Math.floor((s % 3600) / 60);
-  return `${h}:${String(m).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
-}
-
-function sessionMs(s: VolunteerSession): number {
-  const end = s.ended_at ? new Date(s.ended_at).getTime() : Date.now();
-  return end - new Date(s.started_at).getTime();
 }
 
 const card = "rounded-2xl bg-white p-5 shadow-sm";
@@ -570,89 +553,6 @@ function BoxesTab({ userId }: { userId: string }) {
 }
 
 // ---------------------------------------------------------------------------
-// Timer tab
-// ---------------------------------------------------------------------------
-function TimerTab({ userId }: { userId: string }) {
-  const db = getSupabase();
-  const [active, setActive] = useState<VolunteerSession | null>(null);
-  const [history, setHistory] = useState<VolunteerSession[]>([]);
-  const [busy, setBusy] = useState(false);
-  const [, setTick] = useState(0);
-
-  const load = useCallback(async () => {
-    const [a, h] = await Promise.all([
-      getActiveVolunteerSession(db, userId),
-      getVolunteerSessions(db, userId),
-    ]);
-    setActive(a);
-    setHistory(h);
-  }, [db, userId]);
-
-  useEffect(() => {
-    load();
-  }, [load]);
-
-  useEffect(() => {
-    if (!active) return;
-    const t = setInterval(() => setTick((n) => n + 1), 1000);
-    return () => clearInterval(t);
-  }, [active]);
-
-  async function toggle() {
-    setBusy(true);
-    try {
-      if (active) {
-        await stopVolunteerSession(db, active.id);
-        setActive(null);
-      } else {
-        setActive(await startVolunteerSession(db, userId));
-      }
-      await load();
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  const totalMs = history.reduce((acc, s) => acc + (s.ended_at ? sessionMs(s) : 0), 0);
-  const past = history.filter((s) => s.ended_at);
-
-  return (
-    <div className="flex flex-col gap-4">
-      <div className={`${card} text-center`}>
-        <p className="text-xs font-semibold uppercase tracking-wide text-theme-red-dark/50">
-          {active ? "Volunteering for" : "Volunteer timer"}
-        </p>
-        <p className="mt-2 font-display text-6xl font-extrabold text-theme-red-dark">
-          {active ? fmtDuration(sessionMs(active)) : "0:00:00"}
-        </p>
-        <button className={`${active ? btnOutline : btn} mt-5 w-full`} onClick={toggle} disabled={busy}>
-          {busy ? "..." : active ? "Stop timer" : "Start volunteering"}
-        </button>
-      </div>
-      <div className={`${card} flex items-center justify-between`}>
-        <span className="font-semibold text-theme-red-dark">Total time volunteered</span>
-        <span className="font-display text-xl font-bold text-theme-red">{fmtDuration(totalMs)}</span>
-      </div>
-      {past.length > 0 ? (
-        <div className={card}>
-          <h3 className="font-display text-lg font-bold text-theme-red-dark">Past sessions</h3>
-          <ul className="mt-2 divide-y divide-theme-red-dark/10">
-            {past.map((s) => (
-              <li key={s.id} className="flex justify-between py-2 text-sm">
-                <span className="text-theme-red-dark/80">
-                  {new Date(s.started_at).toLocaleString([], { dateStyle: "medium", timeStyle: "short" })}
-                </span>
-                <span className="font-semibold text-theme-red">{fmtDuration(sessionMs(s))}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
 // Submissions tab (incl. "log a SaveBox" form for web users)
 // ---------------------------------------------------------------------------
 function SubmissionsTab({ userId }: { userId: string }) {
@@ -823,7 +723,7 @@ export default function PortalPage() {
   const [session, setSession] = useState<Session | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [tab, setTab] = useState<"boxes" | "timer" | "submissions" | "account">("boxes");
+  const [tab, setTab] = useState<"boxes" | "submissions" | "account">("boxes");
 
   useEffect(() => {
     db.auth.getSession().then(({ data }) => {
@@ -845,7 +745,6 @@ export default function PortalPage() {
 
   const tabs = [
     { key: "boxes", label: "SaveSpots" },
-    { key: "timer", label: "Volunteer timer" },
     { key: "submissions", label: "My submissions" },
     { key: "account", label: "Account" },
   ] as const;
@@ -894,7 +793,6 @@ export default function PortalPage() {
             </nav>
             <div className="mt-6">
               {tab === "boxes" ? <BoxesTab userId={session.user.id} /> : null}
-              {tab === "timer" ? <TimerTab userId={session.user.id} /> : null}
               {tab === "submissions" ? <SubmissionsTab userId={session.user.id} /> : null}
               {tab === "account" ? (
                 <AccountTab profile={profile} email={session.user.email ?? "—"} />

@@ -11,7 +11,6 @@ import {
   profileSchema,
   restockSchema,
   saveboxSchema,
-  volunteerSessionSchema,
   WAIVER_VERSION,
   type NearbySavebox,
   type NewSaveboxInput,
@@ -20,7 +19,6 @@ import {
   type Restock,
   type RestockInput,
   type Savebox,
-  type VolunteerSession,
 } from "./schemas";
 
 /** Active SaveBoxes near a point, nearest first (calls the SQL RPC). */
@@ -160,68 +158,6 @@ export async function getMyCheckins(
     ...restockSchema.parse({ ...row, saveboxes: undefined }),
     savebox_name: row.saveboxes?.name ?? "Unknown box",
   }));
-}
-
-/** The user's running volunteer session, if any. */
-export async function getActiveVolunteerSession(
-  db: SupabaseClient,
-  userId: string,
-): Promise<VolunteerSession | null> {
-  const { data, error } = await db
-    .from("volunteer_sessions")
-    .select("*")
-    .eq("user_id", userId)
-    .is("ended_at", null)
-    .order("started_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  if (error) throw error;
-  return data ? volunteerSessionSchema.parse(data) : null;
-}
-
-/** Start the volunteer timer (one running session per user at a time). */
-export async function startVolunteerSession(
-  db: SupabaseClient,
-  userId: string,
-): Promise<VolunteerSession> {
-  const existing = await getActiveVolunteerSession(db, userId);
-  if (existing) return existing;
-  const { data, error } = await db
-    .from("volunteer_sessions")
-    .insert({ user_id: userId })
-    .select("*")
-    .single();
-  if (error) throw error;
-  return volunteerSessionSchema.parse(data);
-}
-
-/** Stop the running volunteer timer. */
-export async function stopVolunteerSession(
-  db: SupabaseClient,
-  sessionId: string,
-): Promise<VolunteerSession> {
-  const { data, error } = await db
-    .from("volunteer_sessions")
-    .update({ ended_at: new Date().toISOString() })
-    .eq("id", sessionId)
-    .select("*")
-    .single();
-  if (error) throw error;
-  return volunteerSessionSchema.parse(data);
-}
-
-/** Past volunteer sessions, newest first. */
-export async function getVolunteerSessions(
-  db: SupabaseClient,
-  userId: string,
-): Promise<VolunteerSession[]> {
-  const { data, error } = await db
-    .from("volunteer_sessions")
-    .select("*")
-    .eq("user_id", userId)
-    .order("started_at", { ascending: false });
-  if (error) throw error;
-  return volunteerSessionSchema.array().parse(data ?? []);
 }
 
 /** Upload a check-in photo; returns its public URL. */

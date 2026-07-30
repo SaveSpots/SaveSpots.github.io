@@ -84,15 +84,6 @@ export const restockInputSchema = z.object({
 });
 export type RestockInput = z.infer<typeof restockInputSchema>;
 
-/** A volunteer timer session (`volunteer_sessions`). */
-export const volunteerSessionSchema = z.object({
-  id: z.string().uuid(),
-  user_id: z.string().uuid(),
-  started_at: z.string(),
-  ended_at: z.string().nullable(),
-});
-export type VolunteerSession = z.infer<typeof volunteerSessionSchema>;
-
 /** A portal user profile (`profiles`). */
 export const profileSchema = z.object({
   id: z.string().uuid(),

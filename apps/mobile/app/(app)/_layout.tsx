@@ -74,14 +74,6 @@ export default function AppLayout() {
         }}
       />
       <Tabs.Screen
-        name="volunteer"
-        options={{
-          title: "Volunteer Portal",
-          tabBarLabel: "Volunteer",
-          tabBarIcon: ({ color }) => <TabIcon glyph="⏱" color={color} />,
-        }}
-      />
-      <Tabs.Screen
         name="account"
         options={{
           title: "Account",
