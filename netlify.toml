@@ -1,0 +1,26 @@
+# Netlify build config.
+#
+# WHY THIS FILE EXISTS: on 2026-07-11 (593c32d) this repo became a pnpm
+# monorepo and the Next.js app moved from the repo root to apps/web. Netlify's
+# build settings still pointed at the root, so every deploy since then failed
+# and savespots.org stayed frozen on the last pre-monorepo build. `base` below
+# is what fixes that.
+#
+# @netlify/plugin-nextjs is required for SSR and API routes. Without it the site
+# deploys as static files and /api/eta 404s, which silently degrades the mobile
+# app's drive-time estimates to straight-line guesses.
+#
+# NOTE: if any build settings are also set in the Netlify UI, they override this
+# file. Clear them (Site configuration → Build & deploy → Build settings) so
+# this config wins.
+
+[build]
+  base = "apps/web"
+  command = "pnpm build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
