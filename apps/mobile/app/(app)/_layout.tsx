@@ -43,7 +43,13 @@ export default function AppLayout() {
       <WaiverScreen
         userId={session.user.id}
         fullName={profile.full_name}
-        onSigned={loadProfile}
+        onSigned={() => {
+          // Dismiss immediately; the refetch below just confirms.
+          setProfile((p) =>
+            p ? { ...p, waiver_signed_at: new Date().toISOString() } : p,
+          );
+          loadProfile();
+        }}
       />
     );
   }

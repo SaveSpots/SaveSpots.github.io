@@ -10,9 +10,9 @@ import {
   ScrollView,
   TextInput,
   Pressable,
-  Alert,
   Platform,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { colors, radius } from "@savespots/tokens";
 import {
   signWaiver,
@@ -43,7 +43,9 @@ function Choice({
     >
       <Text
         className={
-          selected ? "text-center font-semibold text-white" : "text-center font-semibold text-theme-red-dark/70"
+          selected
+            ? "text-center text-sm font-semibold text-white"
+            : "text-center text-sm font-semibold text-theme-red-dark/70"
         }
       >
         {label}
@@ -62,7 +64,7 @@ function CheckRow({
   children: string;
 }) {
   return (
-    <Pressable onPress={onToggle} className="mt-4 flex-row items-center gap-3" hitSlop={6}>
+    <Pressable onPress={onToggle} className="mt-4 flex-row items-start gap-3" hitSlop={8}>
       <View
         className={
           checked
@@ -73,7 +75,7 @@ function CheckRow({
       >
         {checked ? <Text className="text-xs font-bold text-white">✓</Text> : null}
       </View>
-      <Text className="flex-1 text-sm text-theme-red-dark">{children}</Text>
+      <Text className="flex-1 text-sm leading-5 text-theme-red-dark">{children}</Text>
     </Pressable>
   );
 }
@@ -92,25 +94,26 @@ export function WaiverScreen({
   const [agreed, setAgreed] = useState(false);
   const [mediaConsent, setMediaConsent] = useState<boolean | null>(null);
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function sign() {
+    setError(null);
     if (!isAdult) {
-      Alert.alert(
-        "Age confirmation",
+      setError(
         "Confirm you are 18 or older. Volunteers under 18 must complete the paper form with a parent or guardian.",
       );
       return;
     }
     if (mediaConsent === null) {
-      Alert.alert("Photo/media release", "Choose whether you consent to photo/media use (section 8).");
+      setError("Choose whether you consent to photo/media use (section 8).");
       return;
     }
     if (signature.trim().length < 2) {
-      Alert.alert("Signature required", "Type your full legal name to sign.");
+      setError("Type your full legal name to sign.");
       return;
     }
     if (!agreed) {
-      Alert.alert("Agreement required", "Tap the checkbox to confirm you agree.");
+      setError("Tick the final checkbox to confirm you agree.");
       return;
     }
     setBusy(true);
@@ -124,38 +127,49 @@ export function WaiverScreen({
       );
       onSigned();
     } catch (e: any) {
-      Alert.alert("Failed", e?.message ?? "Try again.");
+      setError(e?.message ?? "Something went wrong — try again.");
     } finally {
       setBusy(false);
     }
   }
 
   return (
-    <View className="flex-1 bg-cream">
-      <View className="bg-theme-red px-5 pb-4 pt-16">
-        <Text className="text-xs font-bold uppercase tracking-widest text-white/70">
+    <SafeAreaView className="flex-1 bg-cream" edges={["top", "bottom"]}>
+      <View className="border-b border-theme-red-dark/10 bg-white px-5 py-4">
+        <Text className="text-[11px] font-bold uppercase tracking-wider text-theme-red">
           SaveSpots · Harm Reduction & Community Outreach
         </Text>
-        <Text className="mt-1 font-display text-xl font-extrabold leading-7 text-white">
-          {WAIVER_TITLE}
+        <Text className="mt-0.5 font-display text-lg font-extrabold text-theme-red-dark">
+          Volunteer Waiver
+        </Text>
+        <Text className="text-xs text-theme-red-dark/60">
+          One-time step — read and sign to start volunteering.
         </Text>
       </View>
 
-      <ScrollView className="flex-1 px-5 pt-4">
-        <View className="bg-white p-5" style={{ borderRadius: radius.card }}>
-          <Text className="text-sm leading-5 text-theme-red-dark/90">{WAIVER_INTRO}</Text>
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
+      >
+        <View className="bg-white p-4" style={{ borderRadius: radius.card }}>
+          <Text className="font-display text-base font-bold text-theme-red-dark">
+            {WAIVER_TITLE}
+          </Text>
+          <Text className="mt-2 text-[13px] leading-5 text-theme-red-dark/90">
+            {WAIVER_INTRO}
+          </Text>
           {WAIVER_SECTIONS.map((s) => (
-            <View key={s.title} className="mt-5">
-              <Text className="font-display text-base font-bold text-theme-red-dark">
-                {s.title}
+            <View key={s.title} className="mt-4">
+              <Text className="text-sm font-bold text-theme-red-dark">{s.title}</Text>
+              <Text className="mt-1 text-[13px] leading-5 text-theme-red-dark/90">
+                {s.body}
               </Text>
-              <Text className="mt-1.5 text-sm leading-5 text-theme-red-dark/90">{s.body}</Text>
             </View>
           ))}
         </View>
 
         {/* Section 8 choice */}
-        <Text className="mb-2 mt-6 text-sm font-semibold text-theme-red-dark">
+        <Text className="mb-2 mt-5 text-sm font-semibold text-theme-red-dark">
           Photo/media release (section 8) — optional
         </Text>
         <View className="flex-row gap-2">
@@ -175,7 +189,7 @@ export function WaiverScreen({
           I confirm I am 18 years of age or older.
         </CheckRow>
 
-        <Text className="mb-2 mt-6 text-sm font-semibold text-theme-red-dark">
+        <Text className="mb-2 mt-5 text-sm font-semibold text-theme-red-dark">
           Type your full legal name to sign
         </Text>
         <TextInput
@@ -193,17 +207,26 @@ export function WaiverScreen({
           substantial legal rights, and agree to sign it electronically.
         </CheckRow>
 
+        {error ? (
+          <View
+            className="mt-4 border border-theme-red/40 bg-theme-red/10 px-4 py-3"
+            style={{ borderRadius: radius.input }}
+          >
+            <Text className="text-sm font-semibold text-theme-red">{error}</Text>
+          </View>
+        ) : null}
+
         <Pressable
           onPress={sign}
           disabled={busy}
-          className="mb-12 mt-6 items-center bg-theme-red active:bg-theme-red-light"
+          className="mt-5 items-center bg-theme-red active:bg-theme-red-light"
           style={{ borderRadius: radius.button, paddingVertical: 15, opacity: busy ? 0.6 : 1 }}
         >
           <Text className="font-semibold text-white">
-            {busy ? "..." : "I agree — sign waiver"}
+            {busy ? "Signing..." : "I agree — sign waiver"}
           </Text>
         </Pressable>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
