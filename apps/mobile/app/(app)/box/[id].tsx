@@ -154,12 +154,13 @@ export default function BoxDetail() {
         return;
       }
     }
+    if (!photoUri) {
+      Alert.alert("Photo required", "Every check-in needs a photo. Take or choose one.");
+      return;
+    }
     setBusy(true);
     try {
-      let photoUrl: string | undefined;
-      if (photoUri) {
-        photoUrl = await uploadCheckinPhoto(supabase, session!.user.id, photoUri);
-      }
+      const photoUrl = await uploadCheckinPhoto(supabase, session!.user.id, photoUri);
       await reportRestock(supabase, session!.user.id, {
         saveboxId: id!,
         boxGone: gone,
@@ -279,9 +280,9 @@ export default function BoxDetail() {
           </>
         ) : null}
 
-        {/* Photo */}
+        {/* Photo — required on every check-in */}
         <Text className="mb-2 mt-4 text-sm font-semibold text-theme-red-dark">
-          Add a photo (optional)
+          Add a photo (required)
         </Text>
         {photoUri ? (
           <View>

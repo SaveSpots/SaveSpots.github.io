@@ -30,7 +30,17 @@ export type Savebox = z.infer<typeof saveboxSchema>;
 /** Row shape returned by the nearby_saveboxes() RPC (adds distance_m). */
 export const nearbySaveboxSchema = saveboxSchema
   .omit({ host_id: true, submitted_by: true, created_at: true })
-  .extend({ distance_m: z.number() });
+  .extend({
+    distance_m: z.number(),
+    // Most recent check-in for this box (null if never checked in).
+    last_checked_at: z.string().nullable(),
+    last_box_gone: z.boolean().nullable(),
+    last_replaced: z.boolean().nullable(),
+    last_needs_restock: z.boolean().nullable(),
+    last_kits_given: z.number().int().nullable(),
+    last_note: z.string().nullable(),
+    last_photo_url: z.string().nullable(),
+  });
 export type NearbySavebox = z.infer<typeof nearbySaveboxSchema>;
 
 /** What a volunteer submits to log a NEW box for review. */

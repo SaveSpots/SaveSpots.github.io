@@ -141,3 +141,58 @@ export async function fetchTravelTimes(
 export function formatRadiusMiles(meters: number): string {
   return `${Math.round(metersToMiles(meters))} miles`;
 }
+
+// ---------------------------------------------------------------------------
+// Check-in recency (shared so both apps phrase "last checked" identically)
+// ---------------------------------------------------------------------------
+
+/** "3 days ago" / "just now" / "5 months ago" from an ISO timestamp. */
+export function timeAgo(iso: string | null): string {
+  if (!iso) return "never checked";
+  const then = new Date(iso).getTime();
+  const now = Date.now();
+  const s = Math.max(0, Math.round((now - then) / 1000));
+  const mins = Math.round(s / 60);
+  const hrs = Math.round(s / 3600);
+  const days = Math.round(s / 86400);
+  if (s < 60) return "just now";
+  if (mins < 60) return `${mins} min ago`;
+  if (hrs < 24) return `${hrs} hr${hrs === 1 ? "" : "s"} ago`;
+  if (days < 30) return `${days} day${days === 1 ? "" : "s"} ago`;
+  const months = Math.round(days / 30);
+  if (months < 12) return `${months} month${months === 1 ? "" : "s"} ago`;
+  const years = Math.round(days / 365);
+  return `${years} year${years === 1 ? "" : "s"} ago`;
+}
+
+/** Sort key for "needs attention first": never-checked, then oldest check-in. */
+export function stalenessRank(lastCheckedAt: string | null): number {
+  // Never checked = most urgent → rank 0. Otherwise older = smaller timestamp = more urgent.
+  return lastCheckedAt ? new Date(lastCheckedAt).getTime() : 0;
+}
+
+type LastCheckin = {
+  last_checked_at: string | null;
+  last_box_gone: boolean | null;
+  last_replaced: boolean | null;
+  last_needs_restock: boolean | null;
+  last_kits_given: number | null;
+};
+
+/** One-line summary of a box's most recent check-in outcome. */
+export function lastCheckinSummary(b: LastCheckin): string {
+  if (!b.last_checked_at) return "No check-ins yet";
+  if (b.last_box_gone) {
+    return b.last_replaced === true
+      ? "Box was gone — replaced"
+      : b.last_replaced === false
+        ? "Box was gone — not replaced"
+        : "Box was gone";
+  }
+  if (b.last_needs_restock) {
+    return b.last_kits_given != null
+      ? `Restocked — ${b.last_kits_given} savekits given`
+      : "Needs restock";
+  }
+  return "Box OK — no restock needed";
+}

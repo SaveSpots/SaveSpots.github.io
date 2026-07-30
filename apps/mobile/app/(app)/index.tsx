@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   View,
   Text,
+  Image,
   Pressable,
   ActivityIndicator,
   Platform,
@@ -16,6 +17,9 @@ import {
   fetchTravelTimes,
   formatMiles,
   getNearbySaveboxes,
+  lastCheckinSummary,
+  stalenessRank,
+  timeAgo,
   type NearbySavebox,
   type TravelEstimate,
 } from "@savespots/shared";
@@ -70,6 +74,18 @@ export default function MapHome() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [locationDenied, setLocationDenied] = useState(false);
+  const [sortMode, setSortMode] = useState<"nearest" | "stale">("nearest");
+
+  // What the bottom panel shows: nearest 3 to the user/tapped point, or the 3
+  // most overdue boxes (never-checked first, then oldest check-in).
+  const displayed = useMemo(() => {
+    if (sortMode === "stale") {
+      return [...boxes]
+        .sort((a, b) => stalenessRank(a.last_checked_at) - stalenessRank(b.last_checked_at))
+        .slice(0, 3);
+    }
+    return closest;
+  }, [sortMode, boxes, closest]);
 
   /** Ask /api/eta for routed times for the shown boxes; falls back internally. */
   const refreshTravel = useCallback(async (from: LatLng, list: NearbySavebox[]) => {
@@ -131,6 +147,11 @@ export default function MapHome() {
   useEffect(() => {
     load();
   }, [load]);
+
+  // Keep routed times fresh for whatever the panel currently shows.
+  useEffect(() => {
+    if (displayed.length) refreshTravel(origin, displayed);
+  }, [displayed, origin, refreshTravel]);
 
   /** Tap anywhere (or a marker): show the 3 closest boxes to that point. */
   const selectAt = useCallback(
@@ -251,7 +272,7 @@ export default function MapHome() {
           Sized deliberately large — this is the screen's primary answer ("where do I
           go, and how far is it"), and the map behind it is context. fitToCoordinates
           above reserves 260px of bottom padding so pins never hide under it. */}
-      {closest.length > 0 ? (
+      {displayed.length > 0 ? (
         <View
           className="absolute bottom-5 left-3 right-3 bg-white px-4 pb-4 pt-3"
           style={{
@@ -263,21 +284,64 @@ export default function MapHome() {
             elevation: 10,
           }}
         >
-          <View className="mb-1 flex-row items-center justify-between">
+          <View className="mb-2 flex-row items-center justify-between">
             <Text className="font-display text-xl font-bold text-theme-red-dark">
-              Closest SaveSpots to you
+              {sortMode === "stale" ? "Needs a check-in" : "Closest SaveSpots to you"}
             </Text>
             <Pressable onPress={() => setClosest([])} hitSlop={16}>
               <Text className="text-sm font-semibold text-theme-red-dark/50">Close</Text>
             </Pressable>
           </View>
-          {closest.map((b) => {
+
+          {/* Sort toggle */}
+          <View
+            className="mb-1 flex-row overflow-hidden"
+            style={{ borderRadius: radius.button, borderWidth: 1, borderColor: colors.themeRed.DEFAULT }}
+          >
+            {(["nearest", "stale"] as const).map((m) => (
+              <Pressable
+                key={m}
+                onPress={() => setSortMode(m)}
+                className={sortMode === m ? "flex-1 items-center bg-theme-red" : "flex-1 items-center bg-white"}
+                style={{ paddingVertical: 8 }}
+              >
+                <Text
+                  className={
+                    sortMode === m
+                      ? "text-xs font-semibold text-white"
+                      : "text-xs font-semibold text-theme-red"
+                  }
+                >
+                  {m === "nearest" ? "Nearest" : "Longest since checked"}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+
+          {displayed.map((b) => {
             const t = travel[b.id] ?? estimateTravel(b.distance_m);
             return (
               <View
                 key={b.id}
-                className="mt-3 flex-row items-center justify-between border-t border-theme-red-dark/10 pt-3"
+                className="mt-3 flex-row items-center border-t border-theme-red-dark/10 pt-3"
               >
+                {/* Last check-in photo thumbnail — tap opens full history */}
+                <Pressable onPress={() => router.push(`/(app)/box/${b.id}`)}>
+                  {b.last_photo_url ? (
+                    <Image
+                      source={{ uri: b.last_photo_url }}
+                      style={{ width: 48, height: 48, borderRadius: 8, marginRight: 10 }}
+                    />
+                  ) : (
+                    <View
+                      className="items-center justify-center bg-cream"
+                      style={{ width: 48, height: 48, borderRadius: 8, marginRight: 10 }}
+                    >
+                      <Text className="text-[10px] text-theme-red-dark/40">no photo</Text>
+                    </View>
+                  )}
+                </Pressable>
+
                 <Pressable
                   className="flex-1 pr-3 active:opacity-70"
                   onPress={() => router.push(`/(app)/box/${b.id}`)}
@@ -288,26 +352,33 @@ export default function MapHome() {
                   >
                     {b.name}
                   </Text>
-                  {/* Distance and time lead — they're what the user came for.
-                      "~" only while this is the straight-line guess. */}
                   <Text className="mt-0.5 text-sm font-bold text-theme-red">
                     {formatMiles(t.meters)} · {t.estimated ? "~" : ""}
                     {t.label}
                   </Text>
-                  <Text className="mt-0.5 text-xs text-theme-red-dark/60" numberOfLines={1}>
-                    {b.address}, {b.city}
+                  {/* Last check-in: when + what happened */}
+                  <Text
+                    className={
+                      b.last_needs_restock
+                        ? "mt-0.5 text-xs font-semibold text-theme-red"
+                        : "mt-0.5 text-xs text-theme-red-dark/60"
+                    }
+                    numberOfLines={1}
+                  >
+                    {timeAgo(b.last_checked_at)} · {lastCheckinSummary(b)}
                   </Text>
                 </Pressable>
+
                 <Pressable
                   onPress={() => openDirections(b)}
                   className="items-center bg-theme-red active:bg-theme-red-light"
                   style={{
                     borderRadius: radius.button,
                     paddingVertical: 12,
-                    paddingHorizontal: 18,
+                    paddingHorizontal: 16,
                   }}
                 >
-                  <Text className="text-sm font-semibold text-white">Directions</Text>
+                  <Text className="text-sm font-semibold text-white">Go</Text>
                 </Pressable>
               </View>
             );

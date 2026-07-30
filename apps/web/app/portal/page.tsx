@@ -14,6 +14,9 @@ import {
   fetchTravelTimes,
   formatMiles,
   formatRadiusMiles,
+  lastCheckinSummary,
+  stalenessRank,
+  timeAgo,
   type TravelEstimate,
   getNearbySaveboxes,
   getProfile,
@@ -334,10 +337,10 @@ function CheckinForm({
       kits = parseInt(kitsGiven, 10);
       if (Number.isNaN(kits) || kits < 0) return setError("Enter how many savekits you gave.");
     }
+    if (!photo) return setError("A photo is required on every check-in.");
     setBusy(true);
     try {
-      let photoUrl: string | undefined;
-      if (photo) photoUrl = await uploadPhotoFile(userId, photo);
+      const photoUrl = await uploadPhotoFile(userId, photo);
       await reportRestock(getSupabase(), userId, {
         saveboxId: box.id,
         boxGone: gone,
@@ -385,7 +388,7 @@ function CheckinForm({
           <input className={`${input} mt-2`} inputMode="numeric" placeholder="e.g. 5" value={kitsGiven} onChange={(e) => setKitsGiven(e.target.value)} />
         </>
       )}
-      <p className="mt-3 text-sm font-semibold text-theme-red-dark">Photo (optional)</p>
+      <p className="mt-3 text-sm font-semibold text-theme-red-dark">Photo (required)</p>
       <input type="file" accept="image/*" className="mt-1 text-sm text-theme-red-dark/70" onChange={(e) => setPhoto(e.target.files?.[0] ?? null)} />
       <textarea className={`${input} mt-3`} rows={2} placeholder="Note (optional)" value={note} onChange={(e) => setNote(e.target.value)} />
       {error ? <p className="mt-2 text-sm font-semibold text-theme-red">{error}</p> : null}
@@ -406,6 +409,16 @@ function BoxesTab({ userId }: { userId: string }) {
   const [loading, setLoading] = useState(true);
   const [openId, setOpenId] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
+  const [sortMode, setSortMode] = useState<"nearest" | "stale">("nearest");
+
+  const sortedBoxes = useMemo(() => {
+    if (sortMode === "stale") {
+      return [...boxes].sort(
+        (a, b) => stalenessRank(a.last_checked_at) - stalenessRank(b.last_checked_at),
+      );
+    }
+    return boxes; // RPC already returns nearest-first
+  }, [boxes, sortMode]);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -467,22 +480,64 @@ function BoxesTab({ userId }: { userId: string }) {
           No active SaveSpots within {formatRadiusMiles(MAP_RADIUS_M)}.
         </p>
       ) : null}
-      {boxes.map((b) => (
+
+      {boxes.length > 0 ? (
+        <div className="flex overflow-hidden rounded-full border border-theme-red">
+          {(["nearest", "stale"] as const).map((m) => (
+            <button
+              key={m}
+              onClick={() => setSortMode(m)}
+              className={
+                sortMode === m
+                  ? "flex-1 bg-theme-red px-4 py-2 text-sm font-semibold text-white"
+                  : "flex-1 bg-white px-4 py-2 text-sm font-semibold text-theme-red"
+              }
+            >
+              {m === "nearest" ? "Nearest" : "Longest since checked"}
+            </button>
+          ))}
+        </div>
+      ) : null}
+
+      {sortedBoxes.map((b) => (
         <div key={b.id} id={`box-${b.id}`} className={card}>
           <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <h3 className="font-display text-lg font-bold text-theme-red-dark">{b.name}</h3>
-              <p className="text-sm text-theme-red-dark/70">{b.address}, {b.city}</p>
-              {(() => {
-                const t = travel[b.id] ?? estimateTravel(b.distance_m);
-                return (
-                  <p className="mt-1 text-sm font-bold text-theme-red">
-                    {formatMiles(t.meters)} away · {t.estimated ? "~" : ""}
-                    {t.label}
-                    {b.hours ? ` · ${b.hours}` : ""}
-                  </p>
-                );
-              })()}
+            <div className="flex gap-3">
+              {b.last_photo_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={b.last_photo_url}
+                  alt={`Last check-in at ${b.name}`}
+                  className="h-16 w-16 shrink-0 rounded-lg object-cover"
+                />
+              ) : (
+                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg bg-cream text-[10px] text-theme-red-dark/40">
+                  no photo
+                </div>
+              )}
+              <div>
+                <h3 className="font-display text-lg font-bold text-theme-red-dark">{b.name}</h3>
+                <p className="text-sm text-theme-red-dark/70">{b.address}, {b.city}</p>
+                {(() => {
+                  const t = travel[b.id] ?? estimateTravel(b.distance_m);
+                  return (
+                    <p className="mt-1 text-sm font-bold text-theme-red">
+                      {formatMiles(t.meters)} away · {t.estimated ? "~" : ""}
+                      {t.label}
+                      {b.hours ? ` · ${b.hours}` : ""}
+                    </p>
+                  );
+                })()}
+                <p
+                  className={
+                    b.last_needs_restock
+                      ? "mt-0.5 text-xs font-semibold text-theme-red"
+                      : "mt-0.5 text-xs text-theme-red-dark/60"
+                  }
+                >
+                  Last checked {timeAgo(b.last_checked_at)} · {lastCheckinSummary(b)}
+                </p>
+              </div>
             </div>
             <div className="flex gap-2">
               <a
