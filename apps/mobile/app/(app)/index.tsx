@@ -56,6 +56,7 @@ export default function MapHome() {
   const [closest, setClosest] = useState<NearbySavebox[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [locationDenied, setLocationDenied] = useState(false);
 
   const load = useCallback(async () => {
     setError(null);
@@ -63,26 +64,31 @@ export default function MapHome() {
       let coords = FALLBACK;
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status === "granted") {
-        const pos = await Location.getCurrentPositionAsync({});
+        setLocationDenied(false);
+        const pos = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.Balanced,
+        });
         coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      } else {
+        setLocationDenied(true);
       }
       setOrigin(coords);
       const rows = await getNearbySaveboxes(supabase, coords.lat, coords.lng, MAP_RADIUS_M);
       setBoxes(rows);
       // Show the 3 closest boxes to the user right away (RPC returns nearest first).
-      setClosest(rows.slice(0, 3));
-      // Fit the map so every pin is visible at once.
-      if (rows.length > 0) {
-        requestAnimationFrame(() => {
-          mapRef.current?.fitToCoordinates(
-            rows.map((b) => ({ latitude: b.lat, longitude: b.lng })),
-            {
-              edgePadding: { top: 100, right: 60, bottom: 220, left: 60 },
-              animated: true,
-            },
-          );
+      const nearest = rows.slice(0, 3);
+      setClosest(nearest);
+      // Zoom to the user and their nearest boxes (not every pin in the region).
+      const focus = [
+        { latitude: coords.lat, longitude: coords.lng },
+        ...nearest.map((b) => ({ latitude: b.lat, longitude: b.lng })),
+      ];
+      requestAnimationFrame(() => {
+        mapRef.current?.fitToCoordinates(focus, {
+          edgePadding: { top: 120, right: 80, bottom: 260, left: 80 },
+          animated: true,
         });
-      }
+      });
     } catch (e: any) {
       setError(e?.message ?? "Could not load SaveBoxes.");
     } finally {
@@ -193,6 +199,20 @@ export default function MapHome() {
         </Link>
       </View>
 
+      {/* Location permission notice */}
+      {locationDenied ? (
+        <View
+          className="absolute left-4 right-4 bg-white/95 p-3"
+          style={{ top: 64, borderRadius: radius.input }}
+          pointerEvents="none"
+        >
+          <Text className="text-center text-xs font-semibold text-theme-red">
+            Location is off — showing Chicago. Enable it in Settings › Expo Go › Location
+            to see SaveSpots near you.
+          </Text>
+        </View>
+      ) : null}
+
       {/* Bottom panel: 3 closest boxes to the tapped point */}
       {closest.length > 0 ? (
         <View
@@ -208,7 +228,7 @@ export default function MapHome() {
         >
           <View className="mb-1 flex-row items-center justify-between">
             <Text className="font-display text-base font-bold text-theme-red-dark">
-              Closest SaveBoxes
+              Closest SaveSpots to you
             </Text>
             <Pressable onPress={() => setClosest([])} hitSlop={10}>
               <Text className="text-sm font-semibold text-theme-red-dark/50">Close</Text>
