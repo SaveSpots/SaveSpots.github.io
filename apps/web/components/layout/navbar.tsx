@@ -83,6 +83,14 @@ export function SmartNavigation() {
           )}
         </motion.button>
       ))}
+      <motion.a
+        href="/portal"
+        className="rounded-full bg-theme-red px-4 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-theme-red-light"
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+      >
+        Volunteer Portal
+      </motion.a>
     </>
   );
 

@@ -1,12 +1,53 @@
+import { useCallback, useEffect, useState } from "react";
 import { Tabs } from "expo-router";
-import { Text } from "react-native";
+import { Text, View, ActivityIndicator } from "react-native";
 import { colors } from "@savespots/tokens";
+import { getProfile, type Profile } from "@savespots/shared";
+import { supabase } from "../../lib/supabase";
+import { useAuth } from "../../lib/auth";
+import { WaiverScreen } from "../../lib/waiver";
 
 function TabIcon({ glyph, color }: { glyph: string; color: string }) {
   return <Text style={{ fontSize: 20, color }}>{glyph}</Text>;
 }
 
 export default function AppLayout() {
+  const { session } = useAuth();
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [checking, setChecking] = useState(true);
+
+  const loadProfile = useCallback(async () => {
+    if (!session) return;
+    try {
+      setProfile(await getProfile(supabase, session.user.id));
+    } finally {
+      setChecking(false);
+    }
+  }, [session]);
+
+  useEffect(() => {
+    loadProfile();
+  }, [loadProfile]);
+
+  if (checking) {
+    return (
+      <View className="flex-1 items-center justify-center bg-cream">
+        <ActivityIndicator color={colors.themeRed.DEFAULT} />
+      </View>
+    );
+  }
+
+  // One-time waiver gate: no app access until the waiver is signed.
+  if (session && profile && !profile.waiver_signed_at) {
+    return (
+      <WaiverScreen
+        userId={session.user.id}
+        fullName={profile.full_name}
+        onSigned={loadProfile}
+      />
+    );
+  }
+
   return (
     <Tabs
       screenOptions={{

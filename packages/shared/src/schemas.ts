@@ -88,6 +88,21 @@ export const profileSchema = z.object({
   id: z.string().uuid(),
   full_name: z.string(),
   role: z.enum(["host", "volunteer", "admin"]),
+  phone: z.string().nullable().optional(),
+  emergency_contact_name: z.string().nullable().optional(),
+  emergency_contact_phone: z.string().nullable().optional(),
+  waiver_signed_at: z.string().nullable().optional(),
   created_at: z.string(),
 });
 export type Profile = z.infer<typeof profileSchema>;
+
+/** Current waiver text version — bump when the waiver wording changes. */
+export const WAIVER_VERSION = "v1-2026-07-30";
+
+/** Onboarding details collected at sign-up. */
+export const onboardingInputSchema = z.object({
+  phone: z.string().min(7, "Phone number required"),
+  emergencyContactName: z.string().min(1, "Emergency contact name required"),
+  emergencyContactPhone: z.string().min(7, "Emergency contact phone required"),
+});
+export type OnboardingInput = z.infer<typeof onboardingInputSchema>;

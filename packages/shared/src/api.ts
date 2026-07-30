@@ -12,8 +12,10 @@ import {
   restockSchema,
   saveboxSchema,
   volunteerSessionSchema,
+  WAIVER_VERSION,
   type NearbySavebox,
   type NewSaveboxInput,
+  type OnboardingInput,
   type Profile,
   type Restock,
   type RestockInput,
@@ -237,4 +239,83 @@ export async function uploadCheckinPhoto(
     .upload(path, body, { contentType: `image/${ext === "jpg" ? "jpeg" : ext}` });
   if (error) throw error;
   return db.storage.from("checkin-photos").getPublicUrl(path).data.publicUrl;
+}
+
+/** Save onboarding contact details on the caller's profile. */
+export async function saveOnboarding(
+  db: SupabaseClient,
+  userId: string,
+  input: OnboardingInput,
+): Promise<void> {
+  const { error } = await db
+    .from("profiles")
+    .update({
+      phone: input.phone,
+      emergency_contact_name: input.emergencyContactName,
+      emergency_contact_phone: input.emergencyContactPhone,
+    })
+    .eq("id", userId);
+  if (error) throw error;
+}
+
+/** Record a waiver e-signature (audit row + timestamp on the profile). */
+export async function signWaiver(
+  db: SupabaseClient,
+  userId: string,
+  signatureName: string,
+  userAgent?: string,
+): Promise<void> {
+  const { error } = await db.from("waiver_acceptances").insert({
+    user_id: userId,
+    waiver_version: WAIVER_VERSION,
+    signature_name: signatureName,
+    user_agent: userAgent ?? null,
+  });
+  if (error) throw error;
+  const { error: e2 } = await db
+    .from("profiles")
+    .update({ waiver_signed_at: new Date().toISOString() })
+    .eq("id", userId);
+  if (e2) throw e2;
+}
+
+// ---------------------------------------------------------------------------
+// Admin
+// ---------------------------------------------------------------------------
+
+/** All boxes (admin sees every status). */
+export async function adminGetSaveboxes(db: SupabaseClient): Promise<Savebox[]> {
+  const { data, error } = await db
+    .from("saveboxes")
+    .select("*")
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return saveboxSchema.array().parse(data ?? []);
+}
+
+/** Approve / retire / re-activate a box. */
+export async function adminSetSaveboxStatus(
+  db: SupabaseClient,
+  id: string,
+  status: "pending" | "active" | "retired",
+): Promise<void> {
+  const { error } = await db.from("saveboxes").update({ status }).eq("id", id);
+  if (error) throw error;
+}
+
+/** Latest check-ins across all boxes (admin). */
+export async function adminGetRecentCheckins(
+  db: SupabaseClient,
+  limit = 50,
+): Promise<(Restock & { savebox_name: string })[]> {
+  const { data, error } = await db
+    .from("restocks")
+    .select("*, saveboxes(name)")
+    .order("reported_at", { ascending: false })
+    .limit(limit);
+  if (error) throw error;
+  return (data ?? []).map((row: any) => ({
+    ...restockSchema.parse({ ...row, saveboxes: undefined }),
+    savebox_name: row.saveboxes?.name ?? "Unknown box",
+  }));
 }

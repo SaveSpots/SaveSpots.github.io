@@ -9,6 +9,8 @@ import {
   Platform,
 } from "react-native";
 import { radius } from "@savespots/tokens";
+import { onboardingInputSchema, saveOnboarding } from "@savespots/shared";
+import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../lib/auth";
 
 export default function Login() {
@@ -17,13 +19,43 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [emergencyName, setEmergencyName] = useState("");
+  const [emergencyPhone, setEmergencyPhone] = useState("");
   const [busy, setBusy] = useState(false);
 
   async function submit() {
+    if (mode === "up") {
+      if (!fullName.trim()) {
+        Alert.alert("Name required", "Enter your full name.");
+        return;
+      }
+      const parsed = onboardingInputSchema.safeParse({
+        phone: phone.trim(),
+        emergencyContactName: emergencyName.trim(),
+        emergencyContactPhone: emergencyPhone.trim(),
+      });
+      if (!parsed.success) {
+        Alert.alert("Check fields", parsed.error.issues[0]?.message ?? "Invalid input.");
+        return;
+      }
+      setBusy(true);
+      try {
+        await signUp(email.trim(), password, fullName.trim());
+        const { data } = await supabase.auth.getUser();
+        if (data.user) {
+          await saveOnboarding(supabase, data.user.id, parsed.data);
+        }
+      } catch (e: any) {
+        Alert.alert("Sign-up failed", e?.message ?? "Try again.");
+      } finally {
+        setBusy(false);
+      }
+      return;
+    }
     setBusy(true);
     try {
-      if (mode === "in") await signIn(email.trim(), password);
-      else await signUp(email.trim(), password, fullName.trim());
+      await signIn(email.trim(), password);
     } catch (e: any) {
       Alert.alert("Login failed", e?.message ?? "Try again.");
     } finally {
@@ -45,14 +77,42 @@ export default function Login() {
         </Text>
 
         {mode === "up" && (
-          <TextInput
-            value={fullName}
-            onChangeText={setFullName}
-            placeholder="Full name"
-            placeholderTextColor="#ffffff99"
-            className="mt-6 bg-white/10 px-4 py-3 text-white"
-            style={{ borderRadius: radius.input }}
-          />
+          <>
+            <TextInput
+              value={fullName}
+              onChangeText={setFullName}
+              placeholder="Full name"
+              placeholderTextColor="#ffffff99"
+              className="mt-6 bg-white/10 px-4 py-3 text-white"
+              style={{ borderRadius: radius.input }}
+            />
+            <TextInput
+              value={phone}
+              onChangeText={setPhone}
+              placeholder="Phone number"
+              placeholderTextColor="#ffffff99"
+              keyboardType="phone-pad"
+              className="mt-4 bg-white/10 px-4 py-3 text-white"
+              style={{ borderRadius: radius.input }}
+            />
+            <TextInput
+              value={emergencyName}
+              onChangeText={setEmergencyName}
+              placeholder="Emergency contact name"
+              placeholderTextColor="#ffffff99"
+              className="mt-4 bg-white/10 px-4 py-3 text-white"
+              style={{ borderRadius: radius.input }}
+            />
+            <TextInput
+              value={emergencyPhone}
+              onChangeText={setEmergencyPhone}
+              placeholder="Emergency contact phone"
+              placeholderTextColor="#ffffff99"
+              keyboardType="phone-pad"
+              className="mt-4 bg-white/10 px-4 py-3 text-white"
+              style={{ borderRadius: radius.input }}
+            />
+          </>
         )}
         <TextInput
           value={email}
