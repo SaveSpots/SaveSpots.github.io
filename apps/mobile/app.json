@@ -3,7 +3,7 @@
     "name": "SaveSpots",
     "slug": "savespots",
     "scheme": "savespots",
-    "version": "0.1.0",
+    "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
@@ -17,12 +17,20 @@
       "supportsTablet": true,
       "bundleIdentifier": "org.savespots.app",
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "SaveSpots uses your location to show nearby SaveBoxes and to tag a new SaveBox you submit."
+        "NSLocationWhenInUseUsageDescription": "SaveSpots uses your location to show nearby SaveBoxes and to tag a new SaveBox you submit.",
+        "NSCameraUsageDescription": "SaveSpots uses the camera so you can photograph a SaveBox when you check in on it or submit a new location.",
+        "NSPhotoLibraryUsageDescription": "SaveSpots lets you attach a photo from your library to a SaveBox check-in or submission.",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
       "package": "org.savespots.app",
-      "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"],
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "CAMERA",
+        "READ_MEDIA_IMAGES"
+      ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FBF6F3"
@@ -34,6 +42,13 @@
         "expo-location",
         {
           "locationWhenInUsePermission": "SaveSpots uses your location to show nearby SaveBoxes and to tag a new SaveBox you submit."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "SaveSpots lets you attach a photo from your library to a SaveBox check-in or submission.",
+          "cameraPermission": "SaveSpots uses the camera so you can photograph a SaveBox when you check in on it or submit a new location."
         }
       ]
     ],
