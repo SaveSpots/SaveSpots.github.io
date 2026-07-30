@@ -1,28 +1,51 @@
-import { Stack } from "expo-router";
-import { Pressable, Text } from "react-native";
+import { Tabs } from "expo-router";
+import { Text } from "react-native";
 import { colors } from "@savespots/tokens";
-import { useAuth } from "../../lib/auth";
+
+function TabIcon({ glyph, color }: { glyph: string; color: string }) {
+  return <Text style={{ fontSize: 20, color }}>{glyph}</Text>;
+}
 
 export default function AppLayout() {
-  const { signOut } = useAuth();
   return (
-    <Stack
+    <Tabs
       screenOptions={{
         headerStyle: { backgroundColor: colors.themeRed.DEFAULT },
         headerTintColor: colors.white,
         headerTitleStyle: { fontWeight: "700" },
-        contentStyle: { backgroundColor: colors.cream.DEFAULT },
-        headerRight: () => (
-          <Pressable onPress={signOut} hitSlop={10}>
-            <Text style={{ color: colors.white, fontWeight: "600" }}>Sign out</Text>
-          </Pressable>
-        ),
+        sceneStyle: { backgroundColor: colors.cream.DEFAULT },
+        tabBarActiveTintColor: colors.themeRed.DEFAULT,
+        tabBarInactiveTintColor: colors.themeRed.dark + "66",
       }}
     >
-      <Stack.Screen name="index" options={{ title: "SaveSpots" }} />
-      <Stack.Screen name="new" options={{ title: "Log a SaveBox" }} />
-      <Stack.Screen name="submissions" options={{ title: "My submissions" }} />
-      <Stack.Screen name="box/[id]" options={{ title: "SaveBox" }} />
-    </Stack>
+      <Tabs.Screen
+        name="index"
+        options={{
+          title: "SaveSpots",
+          tabBarLabel: "Map",
+          tabBarIcon: ({ color }) => <TabIcon glyph="🗺" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="volunteer"
+        options={{
+          title: "Volunteer Portal",
+          tabBarLabel: "Volunteer",
+          tabBarIcon: ({ color }) => <TabIcon glyph="⏱" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="account"
+        options={{
+          title: "Account",
+          tabBarLabel: "Account",
+          tabBarIcon: ({ color }) => <TabIcon glyph="👤" color={color} />,
+        }}
+      />
+      {/* Screens reachable by navigation but hidden from the tab bar */}
+      <Tabs.Screen name="new" options={{ href: null, title: "Log a SaveBox" }} />
+      <Tabs.Screen name="submissions" options={{ href: null, title: "My submissions" }} />
+      <Tabs.Screen name="box/[id]" options={{ href: null, title: "SaveBox" }} />
+    </Tabs>
   );
 }

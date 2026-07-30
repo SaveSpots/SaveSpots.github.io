@@ -8,13 +8,17 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   nearbySaveboxSchema,
+  profileSchema,
   restockSchema,
   saveboxSchema,
+  volunteerSessionSchema,
   type NearbySavebox,
   type NewSaveboxInput,
+  type Profile,
   type Restock,
   type RestockInput,
   type Savebox,
+  type VolunteerSession,
 } from "./schemas";
 
 /** Active SaveBoxes near a point, nearest first (calls the SQL RPC). */
@@ -75,6 +79,7 @@ export async function reportRestock(
       replaced: input.boxGone ? (input.replaced ?? null) : null,
       kits_given: input.kitsGiven ?? null,
       kits_remaining: input.kitsRemaining ?? null,
+      photo_url: input.photoUrl ?? null,
       needs_restock: input.needsRestock,
       note: input.note ?? null,
       reported_by: userId,
@@ -121,4 +126,114 @@ export async function getMySubmissions(
     .order("created_at", { ascending: false });
   if (error) throw error;
   return saveboxSchema.array().parse(data ?? []);
+}
+
+/** The current user's profile row. */
+export async function getProfile(
+  db: SupabaseClient,
+  userId: string,
+): Promise<Profile | null> {
+  const { data, error } = await db
+    .from("profiles")
+    .select("*")
+    .eq("id", userId)
+    .maybeSingle();
+  if (error) throw error;
+  return data ? profileSchema.parse(data) : null;
+}
+
+/** Check-ins the current user filed, newest first (with the box name). */
+export async function getMyCheckins(
+  db: SupabaseClient,
+  userId: string,
+): Promise<(Restock & { savebox_name: string })[]> {
+  const { data, error } = await db
+    .from("restocks")
+    .select("*, saveboxes(name)")
+    .eq("reported_by", userId)
+    .order("reported_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []).map((row: any) => ({
+    ...restockSchema.parse({ ...row, saveboxes: undefined }),
+    savebox_name: row.saveboxes?.name ?? "Unknown box",
+  }));
+}
+
+/** The user's running volunteer session, if any. */
+export async function getActiveVolunteerSession(
+  db: SupabaseClient,
+  userId: string,
+): Promise<VolunteerSession | null> {
+  const { data, error } = await db
+    .from("volunteer_sessions")
+    .select("*")
+    .eq("user_id", userId)
+    .is("ended_at", null)
+    .order("started_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) throw error;
+  return data ? volunteerSessionSchema.parse(data) : null;
+}
+
+/** Start the volunteer timer (one running session per user at a time). */
+export async function startVolunteerSession(
+  db: SupabaseClient,
+  userId: string,
+): Promise<VolunteerSession> {
+  const existing = await getActiveVolunteerSession(db, userId);
+  if (existing) return existing;
+  const { data, error } = await db
+    .from("volunteer_sessions")
+    .insert({ user_id: userId })
+    .select("*")
+    .single();
+  if (error) throw error;
+  return volunteerSessionSchema.parse(data);
+}
+
+/** Stop the running volunteer timer. */
+export async function stopVolunteerSession(
+  db: SupabaseClient,
+  sessionId: string,
+): Promise<VolunteerSession> {
+  const { data, error } = await db
+    .from("volunteer_sessions")
+    .update({ ended_at: new Date().toISOString() })
+    .eq("id", sessionId)
+    .select("*")
+    .single();
+  if (error) throw error;
+  return volunteerSessionSchema.parse(data);
+}
+
+/** Past volunteer sessions, newest first. */
+export async function getVolunteerSessions(
+  db: SupabaseClient,
+  userId: string,
+): Promise<VolunteerSession[]> {
+  const { data, error } = await db
+    .from("volunteer_sessions")
+    .select("*")
+    .eq("user_id", userId)
+    .order("started_at", { ascending: false });
+  if (error) throw error;
+  return volunteerSessionSchema.array().parse(data ?? []);
+}
+
+/** Upload a check-in photo; returns its public URL. */
+export async function uploadCheckinPhoto(
+  db: SupabaseClient,
+  userId: string,
+  localUri: string,
+): Promise<string> {
+  const ext = localUri.split(".").pop()?.toLowerCase() || "jpg";
+  const path = `${userId}/${Date.now()}.${ext}`;
+  const res = await fetch(localUri);
+  const body = await res.arrayBuffer();
+  const { error } = await db.storage
+    .from("checkin-photos")
+    .upload(path, body, { contentType: `image/${ext === "jpg" ? "jpeg" : ext}` });
+  if (error) throw error;
+  return db.storage.from("checkin-photos").getPublicUrl(path).data.publicUrl;
 }

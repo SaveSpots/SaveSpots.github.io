@@ -7,13 +7,16 @@ import {
   TextInput,
   ActivityIndicator,
   Alert,
+  Image,
 } from "react-native";
 import { useLocalSearchParams } from "expo-router";
+import * as ImagePicker from "expo-image-picker";
 import { colors, radius } from "@savespots/tokens";
 import {
   getSavebox,
   getRestocks,
   reportRestock,
+  uploadCheckinPhoto,
   type Savebox,
   type Restock,
 } from "@savespots/shared";
@@ -91,7 +94,26 @@ export default function BoxDetail() {
   const [needsRestock, setNeedsRestock] = useState<boolean | null>(null);
   const [kitsGiven, setKitsGiven] = useState("");
   const [note, setNote] = useState("");
+  const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+
+  async function pickPhoto() {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      quality: 0.7,
+    });
+    if (!result.canceled && result.assets[0]) setPhotoUri(result.assets[0].uri);
+  }
+
+  async function takePhoto() {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert("Camera needed", "Allow camera access to take a photo.");
+      return;
+    }
+    const result = await ImagePicker.launchCameraAsync({ quality: 0.7 });
+    if (!result.canceled && result.assets[0]) setPhotoUri(result.assets[0].uri);
+  }
 
   const load = useCallback(async () => {
     if (!id) return;
@@ -134,12 +156,17 @@ export default function BoxDetail() {
     }
     setBusy(true);
     try {
+      let photoUrl: string | undefined;
+      if (photoUri) {
+        photoUrl = await uploadCheckinPhoto(supabase, session!.user.id, photoUri);
+      }
       await reportRestock(supabase, session!.user.id, {
         saveboxId: id!,
         boxGone: gone,
         replaced: gone ? replaced! : undefined,
         needsRestock: !gone && needsRestock === true,
         kitsGiven: kits,
+        photoUrl,
         note: note.trim() || undefined,
       });
       setGone(null);
@@ -147,6 +174,7 @@ export default function BoxDetail() {
       setNeedsRestock(null);
       setKitsGiven("");
       setNote("");
+      setPhotoUri(null);
       await load();
       Alert.alert("Thanks!", "Your check-in was logged.");
     } catch (e: any) {
@@ -251,6 +279,42 @@ export default function BoxDetail() {
           </>
         ) : null}
 
+        {/* Photo */}
+        <Text className="mb-2 mt-4 text-sm font-semibold text-theme-red-dark">
+          Add a photo (optional)
+        </Text>
+        {photoUri ? (
+          <View>
+            <Image
+              source={{ uri: photoUri }}
+              style={{ width: "100%", height: 180, borderRadius: radius.input }}
+              resizeMode="cover"
+            />
+            <Pressable onPress={() => setPhotoUri(null)} hitSlop={10} className="mt-2">
+              <Text className="text-center text-xs font-semibold text-theme-red-dark/50">
+                Remove photo
+              </Text>
+            </Pressable>
+          </View>
+        ) : (
+          <View className="flex-row gap-2">
+            <Pressable
+              onPress={takePhoto}
+              className="flex-1 items-center border border-theme-red-dark/20 bg-white active:opacity-70"
+              style={{ borderRadius: radius.button, paddingVertical: 10 }}
+            >
+              <Text className="font-semibold text-theme-red-dark/70">Take photo</Text>
+            </Pressable>
+            <Pressable
+              onPress={pickPhoto}
+              className="flex-1 items-center border border-theme-red-dark/20 bg-white active:opacity-70"
+              style={{ borderRadius: radius.button, paddingVertical: 10 }}
+            >
+              <Text className="font-semibold text-theme-red-dark/70">Choose from library</Text>
+            </Pressable>
+          </View>
+        )}
+
         <TextInput
           value={note}
           onChangeText={setNote}
@@ -287,6 +351,18 @@ export default function BoxDetail() {
           </Text>
           {r.note ? (
             <Text className="mt-1 text-xs text-theme-red-dark/70">{r.note}</Text>
+          ) : null}
+          {r.photo_url ? (
+            <Image
+              source={{ uri: r.photo_url }}
+              style={{
+                width: "100%",
+                height: 160,
+                borderRadius: radius.input,
+                marginTop: 8,
+              }}
+              resizeMode="cover"
+            />
           ) : null}
         </View>
       ))}

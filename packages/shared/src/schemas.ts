@@ -52,6 +52,7 @@ export const restockSchema = z.object({
   needs_restock: z.boolean(),
   box_gone: z.boolean(),
   replaced: z.boolean().nullable(), // only meaningful when box_gone
+  photo_url: z.string().nullable(),
   note: z.string().nullable(),
   reported_by: z.string().uuid().nullable(),
   reported_at: z.string(),
@@ -66,9 +67,19 @@ export const restockInputSchema = z.object({
   needsRestock: z.boolean(),
   kitsGiven: z.number().int().min(0).optional(), // required in the UI when needsRestock
   kitsRemaining: z.number().int().min(0).optional(),
+  photoUrl: z.string().optional(),
   note: z.string().max(500).optional(),
 });
 export type RestockInput = z.infer<typeof restockInputSchema>;
+
+/** A volunteer timer session (`volunteer_sessions`). */
+export const volunteerSessionSchema = z.object({
+  id: z.string().uuid(),
+  user_id: z.string().uuid(),
+  started_at: z.string(),
+  ended_at: z.string().nullable(),
+});
+export type VolunteerSession = z.infer<typeof volunteerSessionSchema>;
 
 /** A portal user profile (`profiles`). */
 export const profileSchema = z.object({
