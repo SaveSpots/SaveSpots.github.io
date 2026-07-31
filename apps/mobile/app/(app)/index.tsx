@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   View,
   Text,
-  Image,
   Pressable,
   ActivityIndicator,
   Platform,
@@ -325,23 +324,6 @@ export default function MapHome() {
                 key={b.id}
                 className="mt-3 flex-row items-center border-t border-theme-red-dark/10 pt-3"
               >
-                {/* Last check-in photo thumbnail — tap opens full history */}
-                <Pressable onPress={() => router.push(`/(app)/box/${b.id}`)}>
-                  {b.last_photo_url ? (
-                    <Image
-                      source={{ uri: b.last_photo_url }}
-                      style={{ width: 48, height: 48, borderRadius: 8, marginRight: 10 }}
-                    />
-                  ) : (
-                    <View
-                      className="items-center justify-center bg-cream"
-                      style={{ width: 48, height: 48, borderRadius: 8, marginRight: 10 }}
-                    >
-                      <Text className="text-[10px] text-theme-red-dark/40">no photo</Text>
-                    </View>
-                  )}
-                </Pressable>
-
                 <Pressable
                   className="flex-1 pr-3 active:opacity-70"
                   onPress={() => router.push(`/(app)/box/${b.id}`)}
