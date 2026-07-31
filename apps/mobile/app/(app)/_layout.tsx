@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Tabs } from "expo-router";
 import { Text, View, ActivityIndicator } from "react-native";
 import { colors } from "@savespots/tokens";
-import { getProfile, type Profile } from "@savespots/shared";
+import { getProfile, WAIVER_REQUIRED, type Profile } from "@savespots/shared";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../lib/auth";
 import { WaiverScreen } from "../../lib/waiver";
@@ -38,7 +38,9 @@ export default function AppLayout() {
   }
 
   // One-time waiver gate: no app access until the waiver is signed.
-  if (session && profile && !profile.waiver_signed_at) {
+  // Disabled for the initial App Store submission via WAIVER_REQUIRED; the
+  // screen and its signing logic are untouched.
+  if (WAIVER_REQUIRED && session && profile && !profile.waiver_signed_at) {
     return (
       <WaiverScreen
         userId={session.user.id}

@@ -28,6 +28,7 @@ import {
   saveOnboarding,
   onboardingInputSchema,
   WAIVER_INTRO,
+  WAIVER_REQUIRED,
   WAIVER_SECTIONS,
   WAIVER_TITLE,
   type NearbySavebox,
@@ -692,9 +693,19 @@ function AccountTab({ profile, email }: { profile: Profile; email: string }) {
       ? `${profile.emergency_contact_name} (${profile.emergency_contact_phone ?? "no phone"})`
       : "—"],
     ["Role", profile.role],
-    ["Waiver signed", profile.waiver_signed_at
-      ? new Date(profile.waiver_signed_at).toLocaleDateString()
-      : "Not signed"],
+    // Only meaningful while the waiver gate is on. Signatures already recorded
+    // are kept either way; this just avoids showing "Not signed" to everyone
+    // when there is currently nothing to sign.
+    ...((WAIVER_REQUIRED
+      ? [
+          [
+            "Waiver signed",
+            profile.waiver_signed_at
+              ? new Date(profile.waiver_signed_at).toLocaleDateString()
+              : "Not signed",
+          ],
+        ]
+      : []) as [string, string][]),
     ["Member since", new Date(profile.created_at).toLocaleDateString()],
   ];
   return (
@@ -772,7 +783,7 @@ export default function PortalPage() {
           <p className="mt-10 text-center text-theme-red-dark/60">Loading…</p>
         ) : !session ? (
           <AuthScreen />
-        ) : profile && !profile.waiver_signed_at ? (
+        ) : WAIVER_REQUIRED && profile && !profile.waiver_signed_at ? (
           <WaiverGate userId={session.user.id} onSigned={loadProfile} />
         ) : profile ? (
           <>

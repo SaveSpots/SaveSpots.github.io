@@ -100,6 +100,17 @@ export type Profile = z.infer<typeof profileSchema>;
 /** Current waiver text version — bump when the waiver wording changes. */
 export const WAIVER_VERSION = "v2-2026-07-30";
 
+/**
+ * Whether volunteers must sign the waiver before using the app.
+ *
+ * Temporarily false: the waiver is not part of the initial App Store
+ * submission. Nothing about the waiver has been deleted — the text, the
+ * signing screens, signWaiver(), and the waiver_acceptances audit table are all
+ * intact. Flipping this back to true restores the gate on web and mobile at
+ * once, and previously recorded signatures still count.
+ */
+export const WAIVER_REQUIRED = false;
+
 /** Onboarding details collected at sign-up. */
 export const onboardingInputSchema = z.object({
   phone: z.string().min(7, "Phone number required"),
