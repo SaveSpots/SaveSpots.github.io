@@ -11,8 +11,11 @@ import type { Session } from "@supabase/supabase-js";
 import {
   adminGetSaveboxes,
   adminGetRecentCheckins,
+  adminGetVolunteers,
   adminSetSaveboxStatus,
   getProfile,
+  timeAgo,
+  type AdminVolunteer,
   type Profile,
   type Restock,
   type Savebox,
@@ -48,7 +51,11 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [boxes, setBoxes] = useState<Savebox[]>([]);
   const [checkins, setCheckins] = useState<(Restock & { savebox_name: string })[]>([]);
+  const [volunteers, setVolunteers] = useState<AdminVolunteer[]>([]);
   const [busyId, setBusyId] = useState<string | null>(null);
+  // Emergency contacts are only shown on request — they shouldn't sit on screen
+  // in a shared or screen-shared window by default.
+  const [showContacts, setShowContacts] = useState(false);
 
   useEffect(() => {
     db.auth.getSession().then(async ({ data }) => {
@@ -61,12 +68,14 @@ export default function AdminPage() {
   }, [db]);
 
   const load = useCallback(async () => {
-    const [b, c] = await Promise.all([
+    const [b, c, v] = await Promise.all([
       adminGetSaveboxes(db),
       adminGetRecentCheckins(db, 30),
+      adminGetVolunteers(db),
     ]);
     setBoxes(b);
     setCheckins(c);
+    setVolunteers(v);
   }, [db]);
 
   useEffect(() => {
@@ -114,6 +123,10 @@ export default function AdminPage() {
   const pending = boxes.filter((b) => b.status === "pending");
   const others = boxes.filter((b) => b.status !== "pending");
 
+  /** Resolve a submitted_by / reported_by id to a display name. */
+  const volunteerName = (id: string | null) =>
+    (id && volunteers.find((v) => v.profile.id === id)?.profile.full_name) || "—";
+
   return (
     <main className="min-h-screen bg-cream px-4 pb-16 pt-8">
       <div className="mx-auto max-w-4xl">
@@ -150,7 +163,8 @@ export default function AdminPage() {
                         <p className="text-sm text-theme-red-dark/70">Hours: {b.hours}</p>
                       ) : null}
                       <p className="mt-1 text-xs text-theme-red-dark/50">
-                        Submitted {new Date(b.created_at).toLocaleString()}
+                        Submitted {new Date(b.created_at).toLocaleString()} by{" "}
+                        {volunteerName(b.submitted_by)}
                       </p>
                       <a
                         className="mt-1 inline-block text-xs font-semibold text-theme-red hover:underline"
@@ -201,6 +215,7 @@ export default function AdminPage() {
                 <tr className="border-b border-theme-red-dark/10 text-xs uppercase text-theme-red-dark/50">
                   <th className="px-5 py-3">Name</th>
                   <th className="px-5 py-3">City</th>
+                  <th className="px-5 py-3">Submitted by</th>
                   <th className="px-5 py-3">Status</th>
                   <th className="px-5 py-3">Actions</th>
                 </tr>
@@ -210,6 +225,9 @@ export default function AdminPage() {
                   <tr key={b.id}>
                     <td className="px-5 py-3 font-semibold text-theme-red-dark">{b.name}</td>
                     <td className="px-5 py-3 text-theme-red-dark/70">{b.city}</td>
+                    <td className="px-5 py-3 text-theme-red-dark/70">
+                      {volunteerName(b.submitted_by)}
+                    </td>
                     <td className="px-5 py-3">
                       <span
                         className={
@@ -245,6 +263,103 @@ export default function AdminPage() {
               </tbody>
             </table>
           </div>
+        </section>
+
+        {/* Volunteers */}
+        <section className="mt-8">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="font-display text-xl font-bold text-theme-red-dark">
+              Volunteers{" "}
+              <span className="text-base font-normal text-theme-red-dark/50">
+                ({volunteers.length})
+              </span>
+            </h2>
+            <button
+              className="text-sm font-semibold text-theme-red hover:underline"
+              onClick={() => setShowContacts((s) => !s)}
+            >
+              {showContacts ? "Hide emergency contacts" : "Show emergency contacts"}
+            </button>
+          </div>
+
+          <div className={`${card} mt-3 overflow-x-auto p-0`}>
+            <table className="w-full min-w-[760px] text-left text-sm">
+              <thead>
+                <tr className="border-b border-theme-red-dark/10 text-xs uppercase text-theme-red-dark/50">
+                  <th className="px-5 py-3">Volunteer</th>
+                  <th className="px-5 py-3">Last activity</th>
+                  <th className="px-5 py-3">Check-ins</th>
+                  <th className="px-5 py-3">Submissions</th>
+                  <th className="px-5 py-3">
+                    {showContacts ? "Emergency contact" : "Joined"}
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-theme-red-dark/5">
+                {volunteers.map((v) => (
+                  <tr key={v.profile.id}>
+                    <td className="px-5 py-3">
+                      <div className="font-semibold text-theme-red-dark">
+                        {v.profile.full_name || "—"}
+                        {v.profile.role === "admin" ? (
+                          <span className="ml-2 rounded-full bg-theme-red/10 px-2 py-0.5 text-xs font-semibold text-theme-red">
+                            admin
+                          </span>
+                        ) : null}
+                      </div>
+                      <div className="text-xs text-theme-red-dark/60">
+                        {v.profile.phone ?? "no phone"}
+                      </div>
+                    </td>
+                    <td className="px-5 py-3">
+                      {v.lastActivityAt ? (
+                        <>
+                          <div className="text-theme-red-dark">
+                            {timeAgo(v.lastActivityAt)}
+                          </div>
+                          <div className="text-xs text-theme-red-dark/60">
+                            {v.lastActivityKind}
+                          </div>
+                        </>
+                      ) : (
+                        <span className="text-theme-red-dark/40">never active</span>
+                      )}
+                    </td>
+                    <td className="px-5 py-3 text-theme-red-dark">{v.checkinCount}</td>
+                    <td className="px-5 py-3 text-theme-red-dark">
+                      {v.submissionCount}
+                    </td>
+                    <td className="px-5 py-3">
+                      {showContacts ? (
+                        v.profile.emergency_contact_name ? (
+                          <>
+                            <div className="text-theme-red-dark">
+                              {v.profile.emergency_contact_name}
+                            </div>
+                            <div className="text-xs text-theme-red-dark/60">
+                              {v.profile.emergency_contact_phone ?? "no phone"}
+                            </div>
+                          </>
+                        ) : (
+                          <span className="text-theme-red-dark/40">not provided</span>
+                        )
+                      ) : (
+                        <span className="text-theme-red-dark/70">
+                          {new Date(v.profile.created_at).toLocaleDateString()}
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {showContacts ? (
+            <p className="mt-2 text-xs text-theme-red-dark/50">
+              Emergency contacts are personal data. Use them only to reach someone on a
+              volunteer&apos;s behalf.
+            </p>
+          ) : null}
         </section>
 
         {/* Recent check-ins */}

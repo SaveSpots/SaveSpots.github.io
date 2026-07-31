@@ -257,3 +257,75 @@ export async function adminGetRecentCheckins(
     savebox_name: row.saveboxes?.name ?? "Unknown box",
   }));
 }
+
+/** A volunteer with their activity rollup, for the admin dashboard. */
+export interface AdminVolunteer {
+  profile: Profile;
+  submissionCount: number;
+  checkinCount: number;
+  /** Most recent check-in or submission; null if they've done neither. */
+  lastActivityAt: string | null;
+  lastActivityKind: "check-in" | "submission" | null;
+}
+
+/**
+ * Every volunteer plus their activity summary (admin only — RLS restricts the
+ * underlying tables to profiles.role = 'admin').
+ *
+ * Three list queries rather than a per-user fan-out: the counts are aggregated
+ * client-side so this stays at a fixed number of round trips as the roster
+ * grows.
+ */
+export async function adminGetVolunteers(
+  db: SupabaseClient,
+): Promise<AdminVolunteer[]> {
+  const [profilesRes, boxesRes, checkinsRes] = await Promise.all([
+    db.from("profiles").select("*").order("created_at", { ascending: false }),
+    db.from("saveboxes").select("submitted_by, created_at"),
+    db.from("restocks").select("reported_by, reported_at"),
+  ]);
+  for (const r of [profilesRes, boxesRes, checkinsRes]) {
+    if (r.error) throw r.error;
+  }
+
+  type Agg = { subs: number; checks: number; at: string | null; kind: AdminVolunteer["lastActivityKind"] };
+  const agg = new Map<string, Agg>();
+  const bump = (
+    id: string | null,
+    at: string,
+    kind: Exclude<AdminVolunteer["lastActivityKind"], null>,
+  ) => {
+    if (!id) return;
+    const cur = agg.get(id) ?? { subs: 0, checks: 0, at: null, kind: null };
+    if (kind === "submission") cur.subs += 1;
+    else cur.checks += 1;
+    if (!cur.at || at > cur.at) {
+      cur.at = at;
+      cur.kind = kind;
+    }
+    agg.set(id, cur);
+  };
+
+  for (const b of boxesRes.data ?? []) {
+    bump((b as any).submitted_by, (b as any).created_at, "submission");
+  }
+  for (const c of checkinsRes.data ?? []) {
+    bump((c as any).reported_by, (c as any).reported_at, "check-in");
+  }
+
+  return profileSchema
+    .array()
+    .parse(profilesRes.data ?? [])
+    .map((profile) => {
+      const a = agg.get(profile.id);
+      return {
+        profile,
+        submissionCount: a?.subs ?? 0,
+        checkinCount: a?.checks ?? 0,
+        lastActivityAt: a?.at ?? null,
+        lastActivityKind: a?.kind ?? null,
+      };
+    })
+    // Most recently active first; never-active volunteers sink to the bottom.
+    .sort((x, y) => (y.lastActivityAt ?? "").localeCompare(x.lastActivityAt ?? ""));
+}
