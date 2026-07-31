@@ -13,6 +13,10 @@ import {
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "./supabase";
 
+/** Site that hosts the /auth/confirmed landing page. */
+const CONFIRM_REDIRECT_BASE =
+  process.env.EXPO_PUBLIC_ETA_BASE_URL ?? "https://savespots.org";
+
 interface AuthValue {
   session: Session | null;
   loading: boolean;
@@ -70,6 +74,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       email,
       password,
       options: {
+        // Where the emailed confirmation link lands. Without this Supabase
+        // sends people to site_url — the marketing homepage — which gives no
+        // sign the account was activated, so it reads as a broken link.
+        emailRedirectTo: `${CONFIRM_REDIRECT_BASE}/auth/confirmed`,
         data: {
           full_name: fullName,
           phone: onboarding?.phone ?? "",

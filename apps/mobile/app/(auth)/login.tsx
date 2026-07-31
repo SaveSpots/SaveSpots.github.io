@@ -33,6 +33,11 @@ export default function Login() {
       const { error } = await supabase.auth.resend({
         type: "signup",
         email: pendingEmail,
+        options: {
+          emailRedirectTo: `${
+            process.env.EXPO_PUBLIC_ETA_BASE_URL ?? "https://savespots.org"
+          }/auth/confirmed`,
+        },
       });
       if (error) throw error;
       Alert.alert("Sent", `Another confirmation email is on its way to ${pendingEmail}.`);

@@ -133,6 +133,8 @@ function AuthScreen() {
           email,
           password,
           options: {
+            // Land on a page that confirms success, not the marketing homepage.
+            emailRedirectTo: `${window.location.origin}/auth/confirmed`,
             data: {
               full_name: fullName.trim(),
               phone: parsed.data.phone,
@@ -172,7 +174,11 @@ function AuthScreen() {
             onClick={async () => {
               setBusy(true);
               setError(null);
-              const { error } = await db.auth.resend({ type: "signup", email: pendingEmail });
+              const { error } = await db.auth.resend({
+                type: "signup",
+                email: pendingEmail,
+                options: { emailRedirectTo: `${window.location.origin}/auth/confirmed` },
+              });
               setError(error ? error.message : "Confirmation email sent again.");
               setBusy(false);
             }}
