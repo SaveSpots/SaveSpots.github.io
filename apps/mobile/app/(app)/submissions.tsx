@@ -41,10 +41,11 @@ export default function Submissions() {
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
+    if (!session) return; // signed out mid-render; the root gate is redirecting
     try {
       const [b, c] = await Promise.all([
-        getMySubmissions(supabase, session!.user.id),
-        getMyCheckins(supabase, session!.user.id),
+        getMySubmissions(supabase, session.user.id),
+        getMyCheckins(supabase, session.user.id),
       ]);
       setBoxes(b);
       setCheckins(c);

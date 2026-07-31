@@ -158,10 +158,14 @@ export default function BoxDetail() {
       Alert.alert("Photo required", "Every check-in needs a photo. Take or choose one.");
       return;
     }
+    if (!session) {
+      Alert.alert("Signed out", "Sign in again to log this check-in.");
+      return;
+    }
     setBusy(true);
     try {
-      const photoUrl = await uploadCheckinPhoto(supabase, session!.user.id, photoUri);
-      await reportRestock(supabase, session!.user.id, {
+      const photoUrl = await uploadCheckinPhoto(supabase, session.user.id, photoUri);
+      await reportRestock(supabase, session.user.id, {
         saveboxId: id!,
         boxGone: gone,
         replaced: gone ? replaced! : undefined,

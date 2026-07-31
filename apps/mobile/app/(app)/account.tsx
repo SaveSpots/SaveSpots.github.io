@@ -21,8 +21,9 @@ export default function Account() {
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
+    if (!session) return; // signed out mid-render; the root gate is redirecting
     try {
-      setProfile(await getProfile(supabase, session!.user.id));
+      setProfile(await getProfile(supabase, session.user.id));
     } finally {
       setLoading(false);
     }

@@ -135,10 +135,14 @@ export default function NewBox() {
       Alert.alert("Check fields", parsed.error.issues[0]?.message ?? "Invalid input.");
       return;
     }
+    if (!session) {
+      Alert.alert("Signed out", "Sign in again to submit this SaveBox.");
+      return;
+    }
     setBusy(true);
     try {
-      const photoUrl = await uploadCheckinPhoto(supabase, session!.user.id, photoUri);
-      await submitNewSavebox(supabase, session!.user.id, { ...parsed.data, photoUrl });
+      const photoUrl = await uploadCheckinPhoto(supabase, session.user.id, photoUri);
+      await submitNewSavebox(supabase, session.user.id, { ...parsed.data, photoUrl });
       Alert.alert("Submitted", "Your SaveBox was sent for review.", [
         { text: "OK", onPress: () => router.replace("/(app)/submissions") },
       ]);
