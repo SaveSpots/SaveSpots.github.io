@@ -17,7 +17,17 @@ interface AuthValue {
   session: Session | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, fullName: string) => Promise<void>;
+  /** Returns true when a confirmation email was sent and no session was created. */
+  signUp: (
+    email: string,
+    password: string,
+    fullName: string,
+    onboarding?: {
+      phone: string;
+      emergencyContactName: string;
+      emergencyContactPhone: string;
+    },
+  ) => Promise<boolean>;
   signOut: () => Promise<void>;
 }
 
@@ -43,13 +53,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (error) throw error;
   }
 
-  async function signUp(email: string, password: string, fullName: string) {
-    const { error } = await supabase.auth.signUp({
+  async function signUp(
+    email: string,
+    password: string,
+    fullName: string,
+    onboarding?: {
+      phone: string;
+      emergencyContactName: string;
+      emergencyContactPhone: string;
+    },
+  ): Promise<boolean> {
+    // Onboarding fields travel as sign-up metadata, not a follow-up update:
+    // with email confirmation on there is no session yet, so an authenticated
+    // write would be rejected. A DB trigger copies this into the profile.
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { full_name: fullName } },
+      options: {
+        data: {
+          full_name: fullName,
+          phone: onboarding?.phone ?? "",
+          emergency_contact_name: onboarding?.emergencyContactName ?? "",
+          emergency_contact_phone: onboarding?.emergencyContactPhone ?? "",
+        },
+      },
     });
     if (error) throw error;
+    // No session means Supabase is waiting on email confirmation.
+    return !data.session;
   }
 
   async function signOut() {

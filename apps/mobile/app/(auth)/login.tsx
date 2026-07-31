@@ -23,6 +23,25 @@ export default function Login() {
   const [emergencyName, setEmergencyName] = useState("");
   const [emergencyPhone, setEmergencyPhone] = useState("");
   const [busy, setBusy] = useState(false);
+  // Set once sign-up succeeds but the account still needs email confirmation.
+  const [pendingEmail, setPendingEmail] = useState<string | null>(null);
+
+  async function resend() {
+    if (!pendingEmail) return;
+    setBusy(true);
+    try {
+      const { error } = await supabase.auth.resend({
+        type: "signup",
+        email: pendingEmail,
+      });
+      if (error) throw error;
+      Alert.alert("Sent", `Another confirmation email is on its way to ${pendingEmail}.`);
+    } catch (e: any) {
+      Alert.alert("Couldn't resend", e?.message ?? "Try again in a minute.");
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function submit() {
     if (mode === "up") {
@@ -41,10 +60,17 @@ export default function Login() {
       }
       setBusy(true);
       try {
-        await signUp(email.trim(), password, fullName.trim());
-        const { data } = await supabase.auth.getUser();
-        if (data.user) {
-          await saveOnboarding(supabase, data.user.id, parsed.data);
+        const needsConfirmation = await signUp(
+          email.trim(),
+          password,
+          fullName.trim(),
+          parsed.data,
+        );
+        if (needsConfirmation) {
+          // No session yet — the account exists but can't sign in until the
+          // emailed link is clicked. Say so, instead of silently dropping the
+          // user back on a sign-in form that will reject them as unverified.
+          setPendingEmail(email.trim());
         }
       } catch (e: any) {
         Alert.alert("Sign-up failed", e?.message ?? "Try again.");
@@ -57,10 +83,62 @@ export default function Login() {
     try {
       await signIn(email.trim(), password);
     } catch (e: any) {
-      Alert.alert("Login failed", e?.message ?? "Try again.");
+      const msg: string = e?.message ?? "Try again.";
+      // Supabase reports this as "Email not confirmed" / "unverified", which
+      // doesn't tell the user what to do about it.
+      if (/not confirmed|unverified/i.test(msg)) {
+        setPendingEmail(email.trim());
+      } else {
+        Alert.alert("Login failed", msg);
+      }
     } finally {
       setBusy(false);
     }
+  }
+
+  // Account created, awaiting email confirmation. Without this the user lands
+  // back on the sign-in form and is told "unverified" with no explanation.
+  if (pendingEmail) {
+    return (
+      <View className="flex-1 justify-center bg-theme-red px-7">
+        <Text className="font-display text-3xl font-extrabold text-white">
+          Check your email
+        </Text>
+        <Text className="mt-3 text-base leading-6 text-white/90">
+          We sent a confirmation link to{" "}
+          <Text className="font-semibold text-white">{pendingEmail}</Text>. Tap it to
+          activate your account, then come back and sign in.
+        </Text>
+        <Text className="mt-3 text-sm text-white/70">
+          It can take a minute to arrive. Check your spam folder too.
+        </Text>
+
+        <Pressable
+          onPress={resend}
+          disabled={busy}
+          className="mt-8 items-center border border-white/50 active:opacity-70"
+          style={{ borderRadius: radius.button, paddingVertical: 14, opacity: busy ? 0.6 : 1 }}
+        >
+          <Text className="font-semibold text-white">
+            {busy ? "..." : "Resend confirmation email"}
+          </Text>
+        </Pressable>
+
+        <Pressable
+          onPress={() => {
+            setPendingEmail(null);
+            setMode("in");
+            setPassword("");
+          }}
+          className="mt-4 items-center bg-white active:opacity-80"
+          style={{ borderRadius: radius.button, paddingVertical: 14 }}
+        >
+          <Text className="text-base font-semibold text-theme-red">
+            I've confirmed — sign in
+          </Text>
+        </Pressable>
+      </View>
+    );
   }
 
   return (

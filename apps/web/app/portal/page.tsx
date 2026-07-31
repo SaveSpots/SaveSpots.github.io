@@ -98,6 +98,8 @@ function AuthScreen() {
   const [emergencyPhone, setEmergencyPhone] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  // Set once sign-up succeeds but the account still needs email confirmation.
+  const [pendingEmail, setPendingEmail] = useState<string | null>(null);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -106,6 +108,12 @@ function AuthScreen() {
     try {
       if (mode === "in") {
         const { error } = await db.auth.signInWithPassword({ email, password });
+        // Supabase says "Email not confirmed", which doesn't tell the user
+        // what to do — show the confirmation screen instead.
+        if (error && /not confirmed|unverified/i.test(error.message)) {
+          setPendingEmail(email);
+          return;
+        }
         if (error) throw error;
       } else {
         const parsed = onboardingInputSchema.safeParse({
@@ -116,19 +124,78 @@ function AuthScreen() {
         if (!fullName.trim()) throw new Error("Full name required");
         if (!parsed.success)
           throw new Error(parsed.error.issues[0]?.message ?? "Check the fields");
+        // Onboarding fields go in sign-up metadata rather than a follow-up
+        // update: with email confirmation on there is no session yet, so an
+        // authenticated write would be rejected by RLS and the phone and
+        // emergency contact would be lost. A DB trigger copies these into the
+        // profile row at creation.
         const { error, data } = await db.auth.signUp({
           email,
           password,
-          options: { data: { full_name: fullName.trim() } },
+          options: {
+            data: {
+              full_name: fullName.trim(),
+              phone: parsed.data.phone,
+              emergency_contact_name: parsed.data.emergencyContactName,
+              emergency_contact_phone: parsed.data.emergencyContactPhone,
+            },
+          },
         });
         if (error) throw error;
-        if (data.user) await saveOnboarding(db, data.user.id, parsed.data);
+        if (!data.session) setPendingEmail(email);
       }
     } catch (err: any) {
       setError(err?.message ?? "Something went wrong");
     } finally {
       setBusy(false);
     }
+  }
+
+  if (pendingEmail) {
+    return (
+      <div className="mx-auto mt-10 max-w-md">
+        <div className={card}>
+          <h2 className="font-display text-2xl font-extrabold text-theme-red-dark">
+            Check your email
+          </h2>
+          <p className="mt-3 text-theme-red-dark/80">
+            We sent a confirmation link to{" "}
+            <strong className="text-theme-red-dark">{pendingEmail}</strong>. Click it to
+            activate your account, then come back and sign in.
+          </p>
+          <p className="mt-2 text-sm text-theme-red-dark/60">
+            It can take a minute to arrive. Check your spam folder too.
+          </p>
+          <button
+            className={`${btnOutline} mt-6 w-full`}
+            disabled={busy}
+            onClick={async () => {
+              setBusy(true);
+              setError(null);
+              const { error } = await db.auth.resend({ type: "signup", email: pendingEmail });
+              setError(error ? error.message : "Confirmation email sent again.");
+              setBusy(false);
+            }}
+          >
+            {busy ? "..." : "Resend confirmation email"}
+          </button>
+          <button
+            className={`${btn} mt-3 w-full`}
+            onClick={() => {
+              setPendingEmail(null);
+              setMode("in");
+              setPassword("");
+              setError(null);
+            }}
+          >
+            I&apos;ve confirmed — sign in
+          </button>
+          {error ? (
+            <p className="mt-3 text-sm font-semibold text-theme-red">{error}</p>
+          ) : null}
+        </div>
+      </div>
+    );
   }
 
   return (
