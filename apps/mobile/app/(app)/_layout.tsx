@@ -20,6 +20,9 @@ export default function AppLayout() {
     if (!session) return;
     try {
       setProfile(await getProfile(supabase, session.user.id));
+    } catch {
+      // Never block entry to the app on this request — if it fails the tabs
+      // still render and each screen handles its own load.
     } finally {
       setChecking(false);
     }

@@ -24,6 +24,10 @@ export default function Account() {
     if (!session) return; // signed out mid-render; the root gate is redirecting
     try {
       setProfile(await getProfile(supabase, session.user.id));
+    } catch {
+      // Offline or the request failed. Leave profile null and let the screen
+      // render its empty state — an uncaught rejection here would surface as a
+      // crash rather than a recoverable error.
     } finally {
       setLoading(false);
     }

@@ -124,6 +124,9 @@ export default function BoxDetail() {
       ]);
       setBox(b);
       setRestocks(r);
+    } catch {
+      // Offline or request failed — box stays null and the screen shows its
+      // "SaveBox not found" state rather than crashing.
     } finally {
       setLoading(false);
     }

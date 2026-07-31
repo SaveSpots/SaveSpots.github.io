@@ -49,6 +49,9 @@ export default function Submissions() {
       ]);
       setBoxes(b);
       setCheckins(c);
+    } catch {
+      // Offline or request failed — fall through to the empty state instead of
+      // throwing an unhandled rejection. Pull to refresh retries.
     } finally {
       setLoading(false);
     }
