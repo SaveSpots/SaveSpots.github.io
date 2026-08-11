@@ -14,7 +14,7 @@
       "backgroundColor": "#5a2532"
     },
     "ios": {
-      "supportsTablet": true,
+      "supportsTablet": false,
       "bundleIdentifier": "org.savespots.app",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "SaveSpots uses your location to show nearby SaveBoxes and to tag a new SaveBox you submit.",
