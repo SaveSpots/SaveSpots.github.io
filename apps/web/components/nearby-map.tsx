@@ -15,6 +15,7 @@ import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { estimateTravel, formatMiles, type NearbySavebox } from "@savespots/shared";
+import { directionsUrl } from "@/lib/directions";
 
 const RED = "#C8102E";
 
@@ -88,6 +89,15 @@ export default function NearbyMap({
             {formatMiles(b.distance_m)} · ~{estimateTravel(b.distance_m).label}
             <br />
             {b.address}, {b.city}
+            <br />
+            <a
+              href={directionsUrl(b.lat, b.lng, b.name)}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: RED, fontWeight: 600 }}
+            >
+              Directions →
+            </a>
           </Popup>
         </Marker>
       ))}

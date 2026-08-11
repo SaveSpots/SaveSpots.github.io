@@ -37,6 +37,7 @@ import {
   type Savebox,
 } from "@savespots/shared";
 import { getSupabase } from "@/lib/supabase-browser";
+import { directionsUrl } from "@/lib/directions";
 
 const FALLBACK = { lat: 41.8781, lng: -87.6298 }; // Chicago
 const MAP_RADIUS_M = 50000;
@@ -599,7 +600,9 @@ function BoxesTab({ userId }: { userId: string }) {
             <div className="flex gap-2">
               <a
                 className={btnOutline}
-                href={`https://www.google.com/maps/dir/?api=1&destination=${b.lat},${b.lng}`}
+                // Apple Maps on iOS/iPadOS, Google Maps elsewhere — matches
+                // what the native app does.
+                href={directionsUrl(b.lat, b.lng, b.name)}
                 target="_blank"
                 rel="noopener noreferrer"
               >

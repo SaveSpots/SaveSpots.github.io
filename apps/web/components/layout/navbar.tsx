@@ -172,6 +172,16 @@ export function SmartNavigation() {
                     {label}
                   </Button>
                 ))}
+                {/* The desktop nav renders this as a button in navLinks, which
+                    is hidden on mobile — without repeating it here the portal
+                    is unreachable from a phone. */}
+                <a
+                  href="/portal"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="mt-2 rounded-full bg-theme-red px-5 py-3 text-center text-lg font-semibold text-white transition-colors hover:bg-theme-red-light"
+                >
+                  Volunteer Portal
+                </a>
               </nav>
             </SheetContent>
           </Sheet>
