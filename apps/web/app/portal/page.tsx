@@ -51,6 +51,25 @@ const NearbyMap = dynamic(() => import("@/components/nearby-map"), {
 });
 
 
+type AddressCandidate = { address: string; city: string };
+
+/**
+ * Reverse-geocode through our own proxy (the Google key is server-only).
+ * Returns an empty list rather than throwing when the key is missing, so a
+ * misconfigured deploy degrades to manual address entry.
+ */
+async function reverseGeocode(lat: number, lng: number): Promise<AddressCandidate[]> {
+  const res = await fetch("/api/geocode", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ lat, lng }),
+  });
+  if (res.status === 503) return [];
+  if (!res.ok) throw new Error("geocode failed");
+  const json: { candidates?: AddressCandidate[] } = await res.json();
+  return json.candidates ?? [];
+}
+
 /** Upload a browser File to the checkin-photos bucket; returns public URL. */
 async function uploadPhotoFile(userId: string, file: File): Promise<string> {
   const db = getSupabase();
@@ -643,6 +662,8 @@ function SubmissionsTab({ userId }: { userId: string }) {
   const [hours, setHours] = useState("");
   const [photo, setPhoto] = useState<File | null>(null);
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [candidates, setCandidates] = useState<AddressCandidate[]>([]);
+  const [locating, setLocating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -656,12 +677,46 @@ function SubmissionsTab({ userId }: { userId: string }) {
     load();
   }, [load]);
 
+  /**
+   * Tag the current position and fill in the address fields from it, the same
+   * way the mobile app does. Geocoding is a bonus: if it fails the coordinates
+   * are still tagged and the user can type the address themselves.
+   */
   function tagLocation() {
     if (!navigator.geolocation) return setError("Geolocation not supported by this browser.");
+    setError(null);
+    setLocating(true);
+    setCandidates([]);
     navigator.geolocation.getCurrentPosition(
-      (pos) => setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-      () => setError("Couldn't get your location — allow location access and retry."),
+      async (pos) => {
+        const c = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        setCoords(c);
+        try {
+          const found = await reverseGeocode(c.lat, c.lng);
+          setCandidates(found);
+          if (found[0]) {
+            setAddress(found[0].address);
+            setCity(found[0].city);
+          } else {
+            setError("Couldn't look up an address here — type it in manually.");
+          }
+        } catch {
+          setError("Location tagged, but the address lookup failed — type it in manually.");
+        } finally {
+          setLocating(false);
+        }
+      },
+      () => {
+        setLocating(false);
+        setError("Couldn't get your location — allow location access and retry.");
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
     );
+  }
+
+  function pickCandidate(c: AddressCandidate) {
+    setAddress(c.address);
+    setCity(c.city);
   }
 
   async function submit() {
@@ -684,6 +739,7 @@ function SubmissionsTab({ userId }: { userId: string }) {
       });
       setShowForm(false);
       setName(""); setAddress(""); setCity(""); setHours(""); setPhoto(null); setCoords(null);
+      setCandidates([]);
       await load();
     } catch (e: any) {
       setError(e?.message ?? "Failed — try again.");
@@ -707,9 +763,35 @@ function SubmissionsTab({ userId }: { userId: string }) {
             <input className={input} placeholder="Street address" value={address} onChange={(e) => setAddress(e.target.value)} />
             <input className={input} placeholder="City" value={city} onChange={(e) => setCity(e.target.value)} />
             <input className={input} placeholder="Hours (optional)" value={hours} onChange={(e) => setHours(e.target.value)} />
-            <button className={btnOutline} type="button" onClick={tagLocation}>
-              {coords ? "Location tagged ✓ — retag" : "Use my current location"}
+            <button className={btnOutline} type="button" onClick={tagLocation} disabled={locating}>
+              {locating
+                ? "Finding you…"
+                : coords
+                  ? "Location tagged ✓ — retag"
+                  : "Use my current location"}
             </button>
+            {candidates.length > 1 ? (
+              <div className="flex flex-col gap-1">
+                <p className="text-xs font-semibold uppercase text-theme-red-dark/60">
+                  Nearby addresses
+                </p>
+                {candidates.map((c) => (
+                  <button
+                    key={c.address}
+                    type="button"
+                    onClick={() => pickCandidate(c)}
+                    className={
+                      c.address === address
+                        ? "rounded-lg bg-theme-red px-3 py-2 text-left text-sm font-semibold text-white"
+                        : "rounded-lg bg-white px-3 py-2 text-left text-sm text-theme-red-dark"
+                    }
+                  >
+                    {c.address}
+                    {c.city ? `, ${c.city}` : ""}
+                  </button>
+                ))}
+              </div>
+            ) : null}
             <label className="text-sm font-semibold text-theme-red-dark">
               Photo of the spot (required)
               <input type="file" accept="image/*" className="mt-1 block w-full text-sm font-normal text-theme-red-dark/70" onChange={(e) => setPhoto(e.target.files?.[0] ?? null)} />
