@@ -15,7 +15,7 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "org.savespots.app",
+      "bundleIdentifier": "org.savespots.ios",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "SaveSpots uses your location to show nearby SaveBoxes and to tag a new SaveBox you submit.",
         "NSCameraUsageDescription": "SaveSpots uses the camera so you can photograph a SaveBox when you check in on it or submit a new location.",
