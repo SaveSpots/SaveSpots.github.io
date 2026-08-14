@@ -18,6 +18,7 @@ import {
   stalenessRank,
   timeAgo,
   type TravelEstimate,
+  deleteMyAccount,
   getNearbySaveboxes,
   getProfile,
   getMySubmissions,
@@ -843,6 +844,24 @@ function SubmissionsTab({ userId }: { userId: string }) {
 // Account tab
 // ---------------------------------------------------------------------------
 function AccountTab({ profile, email }: { profile: Profile; email: string }) {
+  const [deleting, setDeleting] = useState(false);
+
+  async function handleDelete() {
+    const sure = window.confirm(
+      "Delete your account? This permanently removes your account and personal information. Your past check-ins are kept anonymously. This cannot be undone.",
+    );
+    if (!sure) return;
+    setDeleting(true);
+    try {
+      await deleteMyAccount(getSupabase());
+      // The auth row is gone; sign out just clears the local session.
+      await getSupabase().auth.signOut();
+    } catch {
+      setDeleting(false);
+      window.alert("Couldn't delete your account. Check your connection and try again.");
+    }
+  }
+
   const rows: [string, string][] = [
     ["Name", profile.full_name || "—"],
     ["Email", email],
@@ -880,6 +899,17 @@ function AccountTab({ profile, email }: { profile: Profile; email: string }) {
       <button className={`${btnOutline} mt-4 w-full`} onClick={() => getSupabase().auth.signOut()}>
         Sign out
       </button>
+      <button
+        className="mt-6 w-full rounded-full border border-theme-red-dark/30 bg-white py-2.5 text-sm font-semibold text-theme-red-dark/60 hover:opacity-70 disabled:opacity-50"
+        onClick={handleDelete}
+        disabled={deleting}
+      >
+        {deleting ? "Deleting account…" : "Delete account"}
+      </button>
+      <p className="mt-2 text-center text-xs text-theme-red-dark/40">
+        Permanently removes your account and personal information. Your past
+        check-ins are kept anonymously so the SaveBox network stays accurate.
+      </p>
     </div>
   );
 }

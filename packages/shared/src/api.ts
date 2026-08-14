@@ -143,6 +143,16 @@ export async function getProfile(
   return data ? profileSchema.parse(data) : null;
 }
 
+/**
+ * Permanently delete the signed-in user's account (App Store 5.1.1(v)).
+ * The auth-row delete cascades to the profile and personal data; check-ins
+ * and saveboxes survive with the reporter anonymized (FKs are SET NULL).
+ */
+export async function deleteMyAccount(db: SupabaseClient): Promise<void> {
+  const { error } = await db.rpc("delete_my_account");
+  if (error) throw error;
+}
+
 /** Check-ins the current user filed, newest first (with the box name). */
 export async function getMyCheckins(
   db: SupabaseClient,

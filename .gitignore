@@ -41,3 +41,6 @@ expo-env.d.ts
 
 # macOS
 .DS_Store
+
+# App Store listing config — contains review demo credentials
+apps/mobile/store.config.json

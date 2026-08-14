@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
-import { View, Text, Pressable, ActivityIndicator, ScrollView } from "react-native";
+import { View, Text, Pressable, ActivityIndicator, ScrollView, Alert } from "react-native";
 import { Link } from "expo-router";
 import { colors, radius } from "@savespots/tokens";
-import { getProfile, type Profile } from "@savespots/shared";
+import { deleteMyAccount, getProfile, type Profile } from "@savespots/shared";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../lib/auth";
 
@@ -19,6 +19,35 @@ export default function Account() {
   const { session, signOut } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [deleting, setDeleting] = useState(false);
+
+  const confirmDelete = useCallback(() => {
+    Alert.alert(
+      "Delete account?",
+      "This permanently removes your account and personal information. Your past check-ins are kept anonymously. This cannot be undone.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            setDeleting(true);
+            try {
+              await deleteMyAccount(supabase);
+              // The auth row is gone; sign out just clears the local session.
+              await signOut();
+            } catch {
+              setDeleting(false);
+              Alert.alert(
+                "Couldn't delete account",
+                "Something went wrong. Check your connection and try again.",
+              );
+            }
+          },
+        },
+      ],
+    );
+  }, [signOut]);
 
   const load = useCallback(async () => {
     if (!session) return; // signed out mid-render; the root gate is redirecting
@@ -79,6 +108,21 @@ export default function Account() {
       >
         <Text className="font-semibold text-white">Sign out</Text>
       </Pressable>
+
+      <Pressable
+        onPress={confirmDelete}
+        disabled={deleting}
+        className="mt-6 items-center border border-theme-red-dark/30 bg-white active:opacity-70"
+        style={{ borderRadius: radius.button, paddingVertical: 13, opacity: deleting ? 0.5 : 1 }}
+      >
+        <Text className="font-semibold text-theme-red-dark/60">
+          {deleting ? "Deleting account…" : "Delete account"}
+        </Text>
+      </Pressable>
+      <Text className="mt-2 px-2 text-center text-xs text-theme-red-dark/40">
+        Permanently removes your account and personal information. Your past
+        check-ins are kept anonymously so the SaveBox network stays accurate.
+      </Text>
     </ScrollView>
   );
 }
