@@ -9,6 +9,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   nearbySaveboxSchema,
   profileSchema,
+  publicSaveboxSchema,
   restockSchema,
   saveboxSchema,
   WAIVER_VERSION,
@@ -16,6 +17,7 @@ import {
   type NewSaveboxInput,
   type OnboardingInput,
   type Profile,
+  type PublicSavebox,
   type Restock,
   type RestockInput,
   type Savebox,
@@ -35,6 +37,22 @@ export async function getNearbySaveboxes(
   });
   if (error) throw error;
   return nearbySaveboxSchema.array().parse(data ?? []);
+}
+
+/**
+ * Every active SaveBox, for the public map on savespots.org. Readable without
+ * signing in (RLS exposes active boxes to anon); selects only public columns.
+ */
+export async function getActiveSaveboxes(
+  db: SupabaseClient,
+): Promise<PublicSavebox[]> {
+  const { data, error } = await db
+    .from("saveboxes")
+    .select("id, name, address, city, lat, lng, hours")
+    .eq("status", "active")
+    .order("name");
+  if (error) throw error;
+  return publicSaveboxSchema.array().parse(data ?? []);
 }
 
 /** A single SaveBox by id. */

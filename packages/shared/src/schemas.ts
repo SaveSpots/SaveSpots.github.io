@@ -27,6 +27,21 @@ export const saveboxSchema = z.object({
 });
 export type Savebox = z.infer<typeof saveboxSchema>;
 
+/**
+ * The public subset of a SaveBox — what the marketing-site map shows to
+ * logged-out visitors. Deliberately excludes host_id / submitted_by.
+ */
+export const publicSaveboxSchema = saveboxSchema.pick({
+  id: true,
+  name: true,
+  address: true,
+  city: true,
+  lat: true,
+  lng: true,
+  hours: true,
+});
+export type PublicSavebox = z.infer<typeof publicSaveboxSchema>;
+
 /** Row shape returned by the nearby_saveboxes() RPC (adds distance_m). */
 export const nearbySaveboxSchema = saveboxSchema
   .omit({ host_id: true, submitted_by: true, created_at: true })

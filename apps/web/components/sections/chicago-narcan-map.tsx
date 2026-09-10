@@ -1,6 +1,8 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Clock, ArrowUpRight } from "lucide-react";
+import { getActiveSaveboxes, type PublicSavebox } from "@savespots/shared";
 import {
   Map,
   MapMarker,
@@ -8,18 +10,26 @@ import {
   MarkerPopup,
   MapControls,
 } from "@/components/ui/mapcn-marker-popup";
+import { getSupabase } from "@/lib/supabase-browser";
 
 // Narcan locations
 type NarcanLocation = {
+  id?: string;
   name: string;
   lat: number;
   lng: number;
   address: string;
-  hours: string;
+  hours?: string | null;
   notes?: string;
 };
 
-const narcanLocations: NarcanLocation[] = [
+/**
+ * Hand-kept snapshot of SaveSpots, shown ONLY when the live list can't be
+ * loaded (Supabase paused or unreachable, env vars missing) so the map is never
+ * blank. The real source is the `saveboxes` table: marking a box active in the
+ * admin dashboard puts it on this map with no code change.
+ */
+const FALLBACK_LOCATIONS: NarcanLocation[] = [
   {
     name: "Al-Tayyab Zabiha Halal Meat and Grocery",
     address: "2753 W Devon Ave, Chicago, IL 60659",
@@ -175,13 +185,32 @@ const narcanLocations: NarcanLocation[] = [
   },
 ];
 
+/** DB rows → map pins. Some addresses already include the city; don't repeat it. */
+function toLocation(box: PublicSavebox): NarcanLocation {
+  const hasCity = box.address.toLowerCase().includes(box.city.toLowerCase());
+  return {
+    id: box.id,
+    name: box.name,
+    lat: box.lat,
+    lng: box.lng,
+    address: hasCity ? box.address : `${box.address}, ${box.city}`,
+    hours: box.hours,
+  };
+}
+
 // Fit the viewport to every SaveSpot so out-of-town pins are never stranded.
-const lngs = narcanLocations.map((l) => l.lng);
-const lats = narcanLocations.map((l) => l.lat);
-const bounds: [[number, number], [number, number]] = [
-  [Math.min(...lngs), Math.min(...lats)],
-  [Math.max(...lngs), Math.max(...lats)],
-];
+// The map reads bounds once at creation, so it is only mounted after loading.
+function boundsOf(
+  locations: NarcanLocation[],
+): [[number, number], [number, number]] {
+  const pts = locations.length ? locations : FALLBACK_LOCATIONS;
+  const lngs = pts.map((l) => l.lng);
+  const lats = pts.map((l) => l.lat);
+  return [
+    [Math.min(...lngs), Math.min(...lats)],
+    [Math.max(...lngs), Math.max(...lats)],
+  ];
+}
 
 // A clean brand-red location pin used for every SaveSpot.
 function SaveSpotPin() {
@@ -194,17 +223,44 @@ function SaveSpotPin() {
 }
 
 export default function ChicagoNarcanMap() {
+  const [locations, setLocations] = useState<NarcanLocation[] | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    getActiveSaveboxes(getSupabase())
+      .then((boxes) => {
+        if (!cancelled) setLocations(boxes.map(toLocation));
+      })
+      .catch((err) => {
+        console.error("Live SaveSpots unavailable; showing saved snapshot.", err);
+        if (!cancelled) setLocations(FALLBACK_LOCATIONS);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (!locations) {
+    return (
+      <div className="grid h-full w-full place-items-center bg-cream-dark">
+        <span className="text-sm font-medium text-theme-red-dark/50">
+          Loading the map...
+        </span>
+      </div>
+    );
+  }
+
   return (
     <Map
       theme="light"
-      bounds={bounds}
+      bounds={boundsOf(locations)}
       fitBoundsOptions={{ padding: 56 }}
       className="h-full w-full"
     >
       <MapControls position="bottom-right" showZoom showFullscreen />
 
-      {narcanLocations.map((loc) => (
-        <MapMarker key={loc.name} longitude={loc.lng} latitude={loc.lat}>
+      {locations.map((loc) => (
+        <MapMarker key={loc.id ?? loc.name} longitude={loc.lng} latitude={loc.lat}>
           <MarkerContent>
             <SaveSpotPin />
           </MarkerContent>
@@ -215,10 +271,12 @@ export default function ChicagoNarcanMap() {
             <p className="mt-1 text-xs leading-relaxed text-neutral-500">
               {loc.address}
             </p>
-            <div className="mt-3 flex items-start gap-2 border-t border-neutral-100 pt-3 text-xs text-neutral-700">
-              <Clock className="mt-0.5 h-3.5 w-3.5 shrink-0 text-theme-red" />
-              <span>{loc.hours}</span>
-            </div>
+            {loc.hours && (
+              <div className="mt-3 flex items-start gap-2 border-t border-neutral-100 pt-3 text-xs text-neutral-700">
+                <Clock className="mt-0.5 h-3.5 w-3.5 shrink-0 text-theme-red" />
+                <span>{loc.hours}</span>
+              </div>
+            )}
             {loc.notes && (
               <p className="mt-1.5 pl-[22px] text-[11px] text-neutral-400">
                 {loc.notes}
