@@ -119,12 +119,11 @@ Then verify with `./scripts/check-deploy.sh https://savespots.org`.
 
 ## 4. Security follow-ups (yours)
 
-- **Rotate the admin password.** `admin@savespots.org` / `SaveSpotsHoodTakeover12!`
-  was shared in a chat transcript. Deliberately *not* rotated automatically —
-  any replacement generated here would land in the same transcript, which is
-  security theater rather than a fix. Change it somewhere nothing is logging:
-  Supabase Dashboard → Authentication → Users → `admin@savespots.org` → reset
-  password. Same applies to the `appreview@savespots.org` demo account after
+- **Rotate the admin password.** The `admin@savespots.org` password was
+  previously committed to this public repo (removed 2026-09-10, but it remains
+  in git history), so treat it as compromised. Change it somewhere nothing is
+  logging: Supabase Dashboard → Authentication → Users → `admin@savespots.org`
+  → reset password. Never write credentials into this file. Same applies to the `appreview@savespots.org` demo account after
   App Review finishes.
 - **Restrict the Google Maps key** in Cloud Console — Routes API only, plus an
   HTTP-referrer or IP restriction. It is server-side now, but it has been
