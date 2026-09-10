@@ -1,0 +1,48 @@
+# Supabase keep-alive.
+#
+# WHY THIS EXISTS: the savespots Supabase project is on the free plan, which
+# pauses a project after 7 days without activity. A paused project's hostname
+# stops resolving (NXDOMAIN), so the volunteer portal and the mobile app both
+# fail to sign anyone in — while savespots.org itself still loads, returns 200
+# on every route, and looks healthy. That happened in September 2026 and was
+# only noticed when volunteers reported the portal "not working".
+#
+# A daily read against the REST API counts as activity and keeps the project
+# awake. If the project is already paused, the request fails and this job goes
+# red, so a dead backend shows up as a red X instead of a user report.
+#
+# Needs one repo secret: SUPABASE_ANON_KEY (same value as
+# NEXT_PUBLIC_SUPABASE_ANON_KEY in apps/web/.env).
+#
+# Moving the project to a paid plan removes auto-pause; delete this workflow then.
+
+name: Supabase keep-alive
+
+on:
+  schedule:
+    - cron: "17 14 * * *" # daily, 14:17 UTC
+  workflow_dispatch:
+
+jobs:
+  ping:
+    name: Ping Supabase
+    runs-on: ubuntu-latest
+    steps:
+      - name: Query saveboxes via REST
+        env:
+          SUPABASE_URL: https://xbfihrolwvafkcwyxwzk.supabase.co
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          if [ -z "$SUPABASE_ANON_KEY" ]; then
+            echo "::error::Repo secret SUPABASE_ANON_KEY is not set."
+            exit 1
+          fi
+          code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 30 \
+            -H "apikey: $SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+            "$SUPABASE_URL/rest/v1/saveboxes?select=id&limit=1")
+          echo "REST status: $code"
+          if [ "$code" != "200" ]; then
+            echo "::error::Supabase did not answer (HTTP $code). The project is probably paused — restore it at https://supabase.com/dashboard/project/xbfihrolwvafkcwyxwzk"
+            exit 1
+          fi
