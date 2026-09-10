@@ -40,9 +40,7 @@ export default function AppLayout() {
     );
   }
 
-  // One-time waiver gate: no app access until the waiver is signed.
-  // Disabled for the initial App Store submission via WAIVER_REQUIRED; the
-  // screen and its signing logic are untouched.
+  // One-time waiver gate (onboarding): no app access until the waiver is signed.
   if (WAIVER_REQUIRED && session && profile && !profile.waiver_signed_at) {
     return (
       <WaiverScreen

@@ -118,13 +118,12 @@ export const WAIVER_VERSION = "v2-2026-07-30";
 /**
  * Whether volunteers must sign the waiver before using the app.
  *
- * Temporarily false: the waiver is not part of the initial App Store
- * submission. Nothing about the waiver has been deleted — the text, the
- * signing screens, signWaiver(), and the waiver_acceptances audit table are all
- * intact. Flipping this back to true restores the gate on web and mobile at
- * once, and previously recorded signatures still count.
+ * True: signing is part of onboarding. After sign-up, a volunteer without a
+ * signature on file is shown the waiver before anything else, on web and
+ * mobile. Signatures are recorded in waiver_acceptances. Mobile picks this up
+ * in its next build (there are no over-the-air updates).
  */
-export const WAIVER_REQUIRED = false;
+export const WAIVER_REQUIRED = true;
 
 /** Onboarding details collected at sign-up. */
 export const onboardingInputSchema = z.object({

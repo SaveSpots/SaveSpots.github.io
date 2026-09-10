@@ -10,6 +10,9 @@ interface SmartImageProps {
   /** Render initials instead of a label (for headshots). */
   initials?: string;
   className?: string;
+  /** Intrinsic size: reserves the right space before the image loads. */
+  width?: number;
+  height?: number;
 }
 
 /**
@@ -23,6 +26,8 @@ export function SmartImage({
   fallbackLabel,
   initials,
   className = "",
+  width,
+  height,
 }: SmartImageProps) {
   const [failed, setFailed] = useState(false);
 
@@ -31,6 +36,7 @@ export function SmartImage({
       <div
         aria-label={alt}
         role="img"
+        style={width && height ? { aspectRatio: `${width} / ${height}` } : undefined}
         className={`flex items-center justify-center bg-gradient-to-br from-theme-red-light/40 to-theme-red-dark/60 ${className}`}
       >
         {initials ? (
@@ -51,6 +57,8 @@ export function SmartImage({
     <img
       src={src}
       alt={alt}
+      width={width}
+      height={height}
       onError={() => setFailed(true)}
       className={className}
       loading="lazy"

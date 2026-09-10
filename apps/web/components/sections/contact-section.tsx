@@ -56,15 +56,6 @@ export function ContactSection() {
               transition={{ delay: 0.4 }}
             >
               <Link
-                href="https://savespots.fillout.com/volunteer"
-                className="w-full"
-                target="_blank"
-              >
-                <ConsistentButton variant="primary" className="w-full">
-                  Join our Research Team
-                </ConsistentButton>
-              </Link>
-              <Link
                 href="https://savespots.fillout.com/savebox"
                 className="w-full"
                 target="_blank"

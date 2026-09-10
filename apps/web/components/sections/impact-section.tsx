@@ -4,20 +4,25 @@ import { motion } from "framer-motion";
 import dynamic from "next/dynamic";
 import { InfiniteGrid } from "@/components/layout/infinite-grid";
 import { stats } from "@/lib/site-data";
+import { useSaveSpots } from "@/hooks/use-savespots";
 
 const ChicagoNarcanMap = dynamic(
   () => import("@/components/sections/chicago-narcan-map"),
   {
     ssr: false,
-    loading: () => (
-      <div className="grid h-full w-full place-items-center bg-cream-dark">
-        <span className="text-sm font-medium text-theme-red-dark/50">
-          Loading the map...
-        </span>
-      </div>
-    ),
+    loading: () => <MapLoading />,
   }
 );
+
+function MapLoading() {
+  return (
+    <div className="grid h-full w-full place-items-center bg-cream-dark">
+      <span className="text-sm font-medium text-theme-red-dark/50">
+        Loading the map...
+      </span>
+    </div>
+  );
+}
 
 const fadeInUp = {
   initial: { opacity: 0, y: 40 },
@@ -26,6 +31,8 @@ const fadeInUp = {
 };
 
 export function OurImpactSection() {
+  const locations = useSaveSpots();
+
   return (
     <section
       id="impact"
@@ -59,7 +66,7 @@ export function OurImpactSection() {
                 >
                   <Icon className="mb-2 text-lg text-white/60" />
                   <div className="font-display text-3xl font-extrabold leading-none text-white">
-                    {s.metric}
+                    {s.id === "activeSaveSpots" ? (locations?.length ?? "—") : s.metric}
                   </div>
                   <div className="mt-1 text-xs font-medium uppercase tracking-wide text-white/60">
                     {s.label}
@@ -76,7 +83,7 @@ export function OurImpactSection() {
           {...fadeInUp}
           transition={{ duration: 0.6, delay: 0.1 }}
         >
-          <ChicagoNarcanMap />
+          {locations ? <ChicagoNarcanMap locations={locations} /> : <MapLoading />}
 
           {/* Legend chip floating on the map */}
           <div className="pointer-events-none absolute left-4 top-4 z-10 flex items-center gap-2 rounded-full bg-white/90 px-3.5 py-2 text-xs font-semibold text-theme-red-dark shadow-lg backdrop-blur">

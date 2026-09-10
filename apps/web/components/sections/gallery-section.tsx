@@ -43,9 +43,11 @@ export function GallerySection() {
                 src={item.image}
                 alt={item.caption}
                 fallbackLabel={item.caption}
-                className={`w-full object-cover ${
-                  i % 3 === 0 ? "aspect-[3/4]" : "aspect-[4/3]"
-                }`}
+                width={item.width}
+                height={item.height}
+                // Natural ratio: every photo is portrait, and forcing 4:3 crops
+                // cut the subjects out. The masonry columns absorb the heights.
+                className="h-auto w-full"
               />
               <figcaption className="px-5 py-4 text-sm font-medium text-white/80">
                 {item.caption}

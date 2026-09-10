@@ -39,6 +39,8 @@ export const mission = {
  * ------------------------------------------------------------------------- */
 
 export interface Stat {
+  /** Stats with an id are filled in live (see impact-section). */
+  id?: "activeSaveSpots";
   metric: string;
   label: string;
   icon: IconType;
@@ -46,7 +48,8 @@ export interface Stat {
 
 export const stats: Stat[] = [
   { metric: "2025", label: "Founded", icon: FaBuilding },
-  { metric: "21", label: "Active SaveSpots", icon: FaMapMarkerAlt },
+  // Live count of active boxes in Supabase; "—" shows only while loading.
+  { id: "activeSaveSpots", metric: "—", label: "Active SaveSpots", icon: FaMapMarkerAlt },
   // CONFIRM + add as they become real:
   // { metric: "—", label: "SaveKits distributed", icon: FaBoxOpen },
   // { metric: "—", label: "Partner locations", icon: FaBuilding },
@@ -289,13 +292,16 @@ export const partners: Partner[] = [
 export interface GalleryItem {
   image: string;
   caption: string;
+  /** Intrinsic pixel size — the gallery renders each photo at its own ratio. */
+  width: number;
+  height: number;
 }
 
 export const gallery: GalleryItem[] = [
-  { image: "/assets/gallery/savebox.jpg", caption: "A stocked SaveBox at a Chicago bar" },
-  { image: "/assets/gallery/community.jpg", caption: "Bringing SaveBoxes to new partners" },
-  { image: "/assets/gallery/recovery.jpg", caption: "Demonstrating the recovery position" },
-  { image: "/assets/gallery/savespot.jpg", caption: "A new SaveSpot on W Madison St" },
+  { image: "/assets/gallery/savebox.jpg", caption: "A stocked SaveBox at a Chicago bar", width: 1080, height: 1350 },
+  { image: "/assets/gallery/community.jpg", caption: "Bringing SaveBoxes to new partners", width: 1440, height: 1920 },
+  { image: "/assets/gallery/recovery.jpg", caption: "Demonstrating the recovery position", width: 1215, height: 2160 },
+  { image: "/assets/gallery/savespot.jpg", caption: "A new SaveSpot on W Madison St", width: 1080, height: 1350 },
 ];
 
 /* ----------------------------------------------------------------------------
@@ -343,10 +349,6 @@ export const instagramFeedId = ""; // e.g. "abcd1234-..." from Behold
  * ------------------------------------------------------------------------- */
 
 export const cta = {
-  volunteer: {
-    label: "Join our research team",
-    href: "https://savespots.fillout.com/volunteer",
-  },
   host: {
     label: "Host a SaveBox",
     href: "https://savespots.fillout.com/savebox",
