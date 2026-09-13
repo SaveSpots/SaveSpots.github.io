@@ -146,7 +146,7 @@ export interface Person {
 export const team: Person[] = [
   {
     name: "Sameer Ilyas",
-    role: "Founder",
+    role: "Co-Founder",
     bio: "Add a short bio.", // CONFIRM: Sameer's bio
     image: "/assets/team/sameer.jpg", // TODO ASSET
     linkedin: "https://www.linkedin.com/in/sameer-ilyas-453b5b1b5/",
