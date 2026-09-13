@@ -26,7 +26,6 @@ import {
   reportRestock,
   submitNewSavebox,
   signWaiver,
-  saveOnboarding,
   onboardingInputSchema,
   WAIVER_INTRO,
   WAIVER_REQUIRED,
@@ -119,11 +118,127 @@ function AuthScreen() {
   const [emergencyPhone, setEmergencyPhone] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  // Sign-up asks one question per screen; this is which one is showing.
+  const [step, setStep] = useState(0);
   // Set once sign-up succeeds but the account still needs email confirmation.
   const [pendingEmail, setPendingEmail] = useState<string | null>(null);
 
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
+  /**
+   * Sign-up, one question at a time. Each step validates on its own so a
+   * mistake is caught at the question that caused it, not in a wall of fields.
+   */
+  const steps: {
+    key: string;
+    question: string;
+    hint?: string;
+    type?: string;
+    autoComplete?: string;
+    placeholder: string;
+    value: string;
+    set: (v: string) => void;
+    error: () => string | null;
+  }[] = [
+    {
+      key: "name",
+      question: "What's your full name?",
+      hint: "As you'd sign it on the volunteer waiver.",
+      autoComplete: "name",
+      placeholder: "Full name",
+      value: fullName,
+      set: setFullName,
+      error: () =>
+        fullName.trim().length < 2 ? "Enter your full name." : null,
+    },
+    {
+      key: "phone",
+      question: "What's your phone number?",
+      hint: "So the team can reach you about the SaveSpots you cover.",
+      type: "tel",
+      autoComplete: "tel",
+      placeholder: "Phone number",
+      value: phone,
+      set: setPhone,
+      error: () =>
+        onboardingInputSchema.shape.phone.safeParse(phone.trim()).success
+          ? null
+          : "Enter a phone number we can reach you on.",
+    },
+    {
+      key: "emergencyName",
+      question: "Who should we contact in an emergency?",
+      hint: "A friend or family member, not yourself.",
+      placeholder: "Emergency contact name",
+      value: emergencyName,
+      set: setEmergencyName,
+      error: () =>
+        onboardingInputSchema.shape.emergencyContactName.safeParse(
+          emergencyName.trim(),
+        ).success
+          ? null
+          : "Enter your emergency contact's name.",
+    },
+    {
+      key: "emergencyPhone",
+      question: "What's their phone number?",
+      type: "tel",
+      placeholder: "Emergency contact phone",
+      value: emergencyPhone,
+      set: setEmergencyPhone,
+      error: () =>
+        onboardingInputSchema.shape.emergencyContactPhone.safeParse(
+          emergencyPhone.trim(),
+        ).success
+          ? null
+          : "Enter your emergency contact's phone number.",
+    },
+    {
+      key: "email",
+      question: "What email should we use?",
+      hint: "You'll get a confirmation link here before you can sign in.",
+      type: "email",
+      autoComplete: "email",
+      placeholder: "Email",
+      value: email,
+      set: setEmail,
+      error: () =>
+        /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
+          ? null
+          : "Enter a valid email address.",
+    },
+    {
+      key: "password",
+      question: "Choose a password",
+      // Matches minimum_password_length in supabase/config.toml — catching it
+      // here beats a rejected sign-up after every other answer is in.
+      hint: "At least 10 characters.",
+      type: "password",
+      autoComplete: "new-password",
+      placeholder: "Password",
+      value: password,
+      set: setPassword,
+      error: () =>
+        password.length >= 10 ? null : "Use at least 10 characters.",
+    },
+  ];
+
+  function startOver(next: "in" | "up") {
+    setMode(next);
+    setStep(0);
+    setError(null);
+  }
+
+  /** Validate the question on screen, then advance or submit. */
+  function advance(e?: React.FormEvent) {
+    e?.preventDefault();
+    const problem = steps[step].error();
+    if (problem) return setError(problem);
+    setError(null);
+    if (step < steps.length - 1) return setStep(step + 1);
+    void submit();
+  }
+
+  async function submit(e?: React.FormEvent) {
+    e?.preventDefault();
     setError(null);
     setBusy(true);
     try {
@@ -225,33 +340,106 @@ function AuthScreen() {
     );
   }
 
+  if (mode === "in") {
+    return (
+      <div className="mx-auto mt-10 max-w-md">
+        <div className={card}>
+          <h2 className="font-display text-2xl font-extrabold text-theme-red-dark">
+            Sign in
+          </h2>
+          <form onSubmit={submit} className="mt-4 flex flex-col gap-3">
+            <input className={input} type="email" placeholder="Email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+            <input className={input} type="password" placeholder="Password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} />
+            {error ? <p className="text-sm font-semibold text-theme-red">{error}</p> : null}
+            <button className={btn} disabled={busy} type="submit">
+              {busy ? "..." : "Sign in"}
+            </button>
+          </form>
+          <button
+            className="mt-4 w-full text-center text-sm text-theme-red-dark/70 hover:text-theme-red"
+            onClick={() => startOver("up")}
+          >
+            No account? Create one
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const current = steps[step];
+  const last = step === steps.length - 1;
+
   return (
     <div className="mx-auto mt-10 max-w-md">
       <div className={card}>
-        <h2 className="font-display text-2xl font-extrabold text-theme-red-dark">
-          {mode === "in" ? "Sign in" : "Create your account"}
-        </h2>
-        <form onSubmit={submit} className="mt-4 flex flex-col gap-3">
-          {mode === "up" && (
-            <>
-              <input className={input} placeholder="Full name" value={fullName} onChange={(e) => setFullName(e.target.value)} />
-              <input className={input} placeholder="Phone number" value={phone} onChange={(e) => setPhone(e.target.value)} />
-              <input className={input} placeholder="Emergency contact name" value={emergencyName} onChange={(e) => setEmergencyName(e.target.value)} />
-              <input className={input} placeholder="Emergency contact phone" value={emergencyPhone} onChange={(e) => setEmergencyPhone(e.target.value)} />
-            </>
-          )}
-          <input className={input} type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
-          <input className={input} type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
+        <div className="flex items-baseline justify-between">
+          <h2 className="font-display text-2xl font-extrabold text-theme-red-dark">
+            Create your account
+          </h2>
+          <span className="text-xs font-semibold uppercase tracking-wide text-theme-red-dark/50">
+            {step + 1} of {steps.length}
+          </span>
+        </div>
+
+        {/* Progress bar: how far through the questions you are. */}
+        <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-theme-red-dark/10">
+          <div
+            className="h-full rounded-full bg-theme-red transition-all duration-300"
+            style={{ width: `${((step + 1) / steps.length) * 100}%` }}
+          />
+        </div>
+
+        <form onSubmit={advance} className="mt-6 flex flex-col gap-3">
+          <label
+            className="font-display text-lg font-bold text-theme-red-dark"
+            htmlFor={`signup-${current.key}`}
+          >
+            {current.question}
+          </label>
+          {current.hint ? (
+            <p className="-mt-1 text-sm text-theme-red-dark/60">{current.hint}</p>
+          ) : null}
+          <input
+            id={`signup-${current.key}`}
+            // Remount per question so autoFocus fires on every step.
+            key={current.key}
+            className={input}
+            type={current.type ?? "text"}
+            autoComplete={current.autoComplete}
+            placeholder={current.placeholder}
+            value={current.value}
+            autoFocus
+            onChange={(e) => {
+              current.set(e.target.value);
+              if (error) setError(null);
+            }}
+          />
           {error ? <p className="text-sm font-semibold text-theme-red">{error}</p> : null}
-          <button className={btn} disabled={busy} type="submit">
-            {busy ? "..." : mode === "in" ? "Sign in" : "Create account"}
-          </button>
+          <div className="mt-1 flex gap-3">
+            {step > 0 ? (
+              <button
+                type="button"
+                className={`${btnOutline} flex-1`}
+                disabled={busy}
+                onClick={() => {
+                  setError(null);
+                  setStep(step - 1);
+                }}
+              >
+                Back
+              </button>
+            ) : null}
+            <button className={`${btn} flex-1`} disabled={busy} type="submit">
+              {busy ? "..." : last ? "Create account" : "Continue"}
+            </button>
+          </div>
         </form>
+
         <button
           className="mt-4 w-full text-center text-sm text-theme-red-dark/70 hover:text-theme-red"
-          onClick={() => setMode(mode === "in" ? "up" : "in")}
+          onClick={() => startOver("in")}
         >
-          {mode === "in" ? "No account? Create one" : "Have an account? Sign in"}
+          Have an account? Sign in
         </button>
       </div>
     </div>
