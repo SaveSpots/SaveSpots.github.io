@@ -15,6 +15,7 @@ import { NextResponse } from "next/server";
 import { MAX_GIFT_USD, MIN_GIFT_USD, org } from "@/lib/donate-config";
 import { SquareError, requireSquareConfig, squareFetch } from "@/lib/square";
 import { ensureMonthlyVariationId } from "@/lib/square-donation-plan";
+import { siteOrigin } from "@/lib/site-url";
 
 // Square-hosted checkout is created per-request, so this can never be static.
 export const dynamic = "force-dynamic";
@@ -80,7 +81,10 @@ export async function POST(request: Request) {
   const donorEmail = asTrimmedString(body.email, 254);
   const donorName = [firstName, lastName].filter(Boolean).join(" ") || undefined;
 
-  const origin = new URL(request.url).origin;
+  // Canonical origin: this URL is baked into the Square payment link, and a
+  // donor finishing a gift should return to the domain they trusted with
+  // their card, not the deploy host.
+  const origin = siteOrigin(request.url);
 
   // A monthly gift charges a subscription plan variation, and Square requires
   // one variation per price point. This resolves (or creates) the variation

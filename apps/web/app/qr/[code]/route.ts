@@ -13,6 +13,7 @@
 
 import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { siteOrigin } from "@/lib/site-url";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -25,7 +26,9 @@ export async function GET(
   { params }: { params: { code: string } }
 ) {
   const code = (params.code ?? "").toLowerCase();
-  const origin = new URL(request.url).origin;
+  // Canonical, not the deploy host — see lib/site-url.ts. A printed code
+  // must never bounce a scanner onto a *.netlify.app address.
+  const origin = siteOrigin(request.url);
 
   // An unrecognised or malformed code still lands the visitor on the donate
   // page. Someone standing in front of a poster should never see an error
