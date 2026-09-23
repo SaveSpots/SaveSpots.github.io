@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { socials } from "@/lib/site-data";
+import { TAX_DEDUCTIBLE_NOTICE } from "@/lib/donate-config";
 
 export function Footer() {
   const scrollToSection = (sectionId: string) => {
@@ -89,6 +90,24 @@ export function Footer() {
                   {label}
                 </motion.button>
               ))}
+              {/* Real routes, not scroll targets — scrollToSection would be a
+                  no-op for these, so they stay plain anchors. */}
+              <motion.a
+                href="/donate"
+                whileHover={{ scale: 1.05, x: 5 }}
+                className="text-left text-white hover:text-white transition-colors block font-semibold"
+                data-cursor="button"
+              >
+                Donate
+              </motion.a>
+              <motion.a
+                href="/portal"
+                whileHover={{ scale: 1.05, x: 5 }}
+                className="text-left text-white/90 hover:text-white transition-colors block font-medium"
+                data-cursor="button"
+              >
+                Volunteer Portal
+              </motion.a>
             </div>
           </div>
         </div>
@@ -96,6 +115,11 @@ export function Footer() {
         <div className="border-t border-white/20 mt-12 pt-8">
           <p className="flex text-white/80 text-md font-medium justify-center">
             &copy; {new Date().getFullYear()} SaveSpots — All rights reserved.
+          </p>
+          {/* Sitewide tax-status disclosure: donors look for the EIN before
+              giving, and it belongs on every page, not just /donate. */}
+          <p className="mt-3 text-center text-sm font-medium text-white/60">
+            {TAX_DEDUCTIBLE_NOTICE}
           </p>
         </div>
       </div>

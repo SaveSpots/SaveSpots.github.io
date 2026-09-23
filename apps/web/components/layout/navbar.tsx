@@ -83,13 +83,23 @@ export function SmartNavigation() {
           )}
         </motion.button>
       ))}
+      {/* Volunteer Portal drops to an outline so the filled button is unambiguous:
+          donating is the one action we ask every visitor for. */}
       <motion.a
         href="/portal"
-        className="rounded-full bg-theme-red px-4 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-theme-red-light"
+        className="rounded-full border border-theme-red px-4 py-1.5 text-sm font-semibold text-theme-red transition-colors hover:bg-theme-red hover:text-white"
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
       >
         Volunteer Portal
+      </motion.a>
+      <motion.a
+        href="/donate"
+        className="rounded-full bg-theme-red px-4 py-1.5 text-sm font-semibold text-white shadow-md shadow-theme-red/30 transition-colors hover:bg-theme-red-light"
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+      >
+        Donate
       </motion.a>
     </>
   );
@@ -117,12 +127,12 @@ export function SmartNavigation() {
         </div>
 
         {/* Desktop nav links centered */}
-        <div className="hidden md:flex items-center space-x-6">
+        <div className="hidden lg:flex items-center space-x-5">
           {navLinks}
         </div>
 
         {/* Mobile menu button positioned right */}
-        <div className="md:hidden absolute right-4">
+        <div className="lg:hidden absolute right-4">
           <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="text-theme-red">
@@ -172,13 +182,20 @@ export function SmartNavigation() {
                     {label}
                   </Button>
                 ))}
-                {/* The desktop nav renders this as a button in navLinks, which
-                    is hidden on mobile — without repeating it here the portal
-                    is unreachable from a phone. */}
+                {/* The desktop nav renders these as buttons in navLinks, which
+                    are hidden on mobile — without repeating them here Donate and
+                    the portal are unreachable from a phone. */}
+                <a
+                  href="/donate"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="mt-2 rounded-full bg-theme-red px-5 py-3 text-center text-lg font-semibold text-white transition-colors hover:bg-theme-red-light"
+                >
+                  Donate
+                </a>
                 <a
                   href="/portal"
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="mt-2 rounded-full bg-theme-red px-5 py-3 text-center text-lg font-semibold text-white transition-colors hover:bg-theme-red-light"
+                  className="rounded-full border border-theme-red px-5 py-3 text-center text-lg font-semibold text-theme-red transition-colors hover:bg-theme-red hover:text-white"
                 >
                   Volunteer Portal
                 </a>

@@ -1,0 +1,195 @@
+# Donations — Square setup, compliance, and what still needs doing
+
+Covers `/donate`, `/donate/thank-you`, and `POST /api/donate/checkout`.
+
+---
+
+## 1. What was built
+
+| Piece | File |
+|---|---|
+| Donate page (amount picker, donor fields, trust copy) | `apps/web/app/donate/page.tsx` |
+| Amount picker + submit logic | `apps/web/components/donate/donate-form.tsx` |
+| Server route that creates the Square checkout | `apps/web/app/api/donate/checkout/route.ts` |
+| Post-payment confirmation / on-screen acknowledgment | `apps/web/app/donate/thank-you/page.tsx` |
+| Legal strings, EIN, gift tiers | `apps/web/lib/donate-config.ts` |
+| Donate button in nav + footer | `apps/web/components/layout/navbar.tsx`, `footer.tsx` |
+
+`Donate` is now the only filled button in the nav bar. `Volunteer Portal` dropped to
+an outline so there is exactly one primary action sitewide.
+
+---
+
+## 2. Why Square-hosted checkout and not a card form on our site
+
+Square offers three ways in. We took the middle one.
+
+| Option | What it is | Why not / why yes |
+|---|---|---|
+| Payment link made by hand in the Square Dashboard | One static "Donate" URL | No preset amounts, no impact copy, no redirect back to our thank-you page, no donor metadata. Fine as a backup, bad as the product. |
+| **Checkout API payment links (what we built)** | Our server calls Square, Square returns a one-time hosted checkout URL, donor is redirected | Card data never touches savespots.org. Apple Pay / Google Pay / Cash App Pay and 3-D Secure come free. Preset amounts and impact copy stay ours. |
+| Web Payments SDK | Card fields embedded in our page, tokenized client-side, charged server-side | No redirect, fully branded — but it pulls us from PCI **SAQ-A** into **SAQ-A-EP**, a much longer annual self-assessment, because our page would serve the payment form. Not worth it for a volunteer-run nonprofit. |
+
+The practical consequence: **we never see, transmit, or store a card number.** That
+is the single most important property of this design and it should not be traded
+away for the sake of removing one redirect.
+
+---
+
+## 3. Getting it live (Square side — this part is yours)
+
+### 3.1 Create the application
+1. <https://developer.squareup.com/apps> — sign in with the Square account that owns the nonprofit's bank link.
+2. **+** to create an application. Name it `SaveSpots Web`.
+
+### 3.2 Grab sandbox credentials first
+3. In the app, switch the top toggle to **Sandbox**.
+4. **Credentials** → copy the **Sandbox Access Token**.
+5. **Locations** → copy the **Sandbox Location ID**.
+
+### 3.3 Grab production credentials
+6. Flip the toggle to **Production**.
+7. **Credentials** → **Production Access Token**. This one charges real cards — treat it like a bank password.
+8. **Locations** → **Production Location ID**.
+
+### 3.4 Required OAuth scopes
+If you ever move from a personal access token to OAuth, the token needs:
+`PAYMENTS_WRITE`, `ORDERS_READ`, `ORDERS_WRITE`.
+
+### 3.5 Nonprofit pricing — do this, it is real money
+Square gives approved 501(c)(3) organizations a discounted processing rate
+(standard online is 2.9% + 30¢; the nonprofit rate is lower). It is **not
+automatic** — apply through Square Support with the IRS determination letter.
+On $10,000 of annual giving the difference is roughly $50–$70. Apply before
+volume ramps.
+
+---
+
+## 4. Environment variables
+
+Set these in **Netlify → Site configuration → Environment variables** (the live
+site builds on Netlify; `netlify.toml` is the source of truth) and in
+`apps/web/.env.local` for local work.
+
+```
+SQUARE_ACCESS_TOKEN=<production or sandbox access token>
+SQUARE_LOCATION_ID=<matching location id>
+SQUARE_ENVIRONMENT=production
+```
+
+**These are server-only. Never prefix them with `NEXT_PUBLIC_`** — that would
+publish the access token to every browser that loads the site, and anyone could
+then issue refunds and read the full payment history.
+
+`SQUARE_ENVIRONMENT` fails safe: any value other than the exact string
+`production` routes to Square's sandbox. A deploy that forgets the variable
+takes fake money, not real money.
+
+The sandbox and production tokens are **not interchangeable** — a production
+token against the sandbox host returns `UNAUTHORIZED`, and vice versa. Keep the
+environment and the token in sync.
+
+---
+
+## 5. How a payment is actually authorized
+
+```
+donor picks $50 on /donate
+      │
+      ▼
+POST /api/donate/checkout        (our server; holds the secret token)
+      │  validates amount, converts to cents, adds an idempotency key
+      ▼
+POST connect.squareup.com/v2/online-checkout/payment-links
+      │  Square-Version: 2026-09-16, Bearer <SQUARE_ACCESS_TOKEN>
+      ▼
+Square returns { payment_link: { url } }
+      │
+      ▼
+browser redirects to Square's hosted checkout
+      │  donor enters card / taps Apple Pay — on Square's domain, not ours
+      ▼
+Square authorizes and captures with the card networks, emails its own receipt
+      │
+      ▼
+redirect back to /donate/thank-you?amount=5000
+```
+
+Money lands in the Square balance and pays out to the linked bank account on
+Square's normal schedule (next business day by default).
+
+Guards already in the route:
+- Amount must be a finite number between `$1` and `$10,000` (typo ceiling, not policy).
+- Cents are computed with `Math.round(amount * 100)` so floating point cannot overcharge by a cent.
+- A fresh `idempotency_key` per request — a double-click cannot create two links.
+- Square's raw error text goes to the server log, never to the donor.
+- Missing credentials return a 503 with a neutral message instead of a stack trace.
+
+---
+
+## 6. 501(c)(3) compliance — what a donation page must carry
+
+Yes, the tax status is relevant. It changes what the page is legally required to say.
+
+### On the page (done)
+- **Legal name and EIN.** Donors need the EIN to substantiate the deduction. It is in the footer sitewide and on `/donate`.
+- **Tax-deductibility statement.** "…tax-deductible to the extent allowed by law." Never promise a deduction outright — that depends on the donor's own tax situation.
+- **Unrestricted-gift notice.** The `$50 covers test strips` framing is marketing, not an earmark. The notice keeps it honest: gifts are unrestricted and go where the need is greatest. Without it, tier copy can create a restricted-gift obligation you then have to honor and account for.
+
+### On the receipt (partly done)
+IRS Publication 1771:
+- A gift of **$250 or more** requires a **contemporaneous written acknowledgment** stating the amount and **"no goods or services were provided in exchange."** Missing that sentence, the donor loses the deduction.
+- A **quid pro quo** gift over **$75** (donor gets a t-shirt, gala seat, etc.) requires a good-faith estimate of the item's value and a statement that only the excess is deductible. **We currently give nothing back, so this does not apply — the moment you add donor swag, it does.**
+
+Right now `/donate/thank-you` displays that language on screen and Square emails a
+payment receipt. **That combination is thin for gifts ≥ $250** — see §8.
+
+### Still outstanding
+- [ ] **Replace the placeholder EIN** in `apps/web/lib/donate-config.ts`. It currently reads `00-0000000`. This is the one blocker before promoting the page.
+- [ ] **Confirm the legal name** matches the IRS determination letter exactly (`SaveSpots NFP` is a guess).
+- [ ] **Illinois charitable solicitation registration.** Illinois requires charities soliciting in-state to register with the Attorney General's Charitable Trust Bureau (Form CO-1 / CO-2, annual AG990-IL). Soliciting online from an Illinois address counts. Confirm registration is current.
+- [ ] **Multi-state solicitation.** ~40 states require registration to solicit residents. A public donate button is technically a solicitation in all of them. Most small nonprofits accept this risk and register where they actively fundraise; know that you are making that choice, not missing it.
+- [ ] **Refund policy.** Add a line for it. Standard practice: refunds honored on request within 30 days for mistakes or duplicates.
+
+---
+
+## 7. What makes a donation page convert — and what we did about it
+
+Researched against nonprofit fundraising norms; each row says what the page does.
+
+| Principle | In our page |
+|---|---|
+| One ask, no competing CTAs | `/donate` strips the site nav to a single "Back to SaveSpots" link. Every nav item is an exit. |
+| Specific, concrete impact beats abstract need | "An overdose is reversible. Only if the naloxone is close enough." Tier lines name supplies, not budget categories. |
+| Preset amounts with one pre-selected | Four tiers, `$50` featured and selected on load. Anchoring — a blank field converts worse than a chosen default. |
+| Custom amount always available | Yes, and focusing it deselects the tiers. |
+| Minimum possible fields | Name and email only, both optional. Every extra field costs donors. |
+| Mobile first | Below `lg` the form sits directly under the headline; the three "why give" blocks move below it. Amount buttons are full-width tap targets. |
+| Digital wallets | Apple Pay, Google Pay and Cash App Pay are enabled on the Square checkout. On mobile these convert far better than typed cards. |
+| Visible trust signals | "Processed securely by Square", explicit "SaveSpots never sees or stores your card details", EIN, contact email. |
+| Volunteer-run / overhead transparency | "Our team is unpaid. Your gift buys supplies and logistics, not salaries." Overhead anxiety is a top reason people abandon. |
+| Thank-you page that does work | Confirms the amount, carries the tax language, offers a formal letter, and asks for a share. |
+| No tipping prompt, no BNPL | Both disabled. A tip prompt on a charitable gift reads as a second ask; buy-now-pay-later on a donation is a support burden. |
+
+### Deliberately deferred
+- **Recurring / monthly giving.** The single highest-value addition — recurring donors are worth several times a one-time donor. It needs Square's Subscriptions API plus a catalog subscription plan, which is a bigger build than payment links. See §8.
+- **"Cover the processing fee" checkbox.** Easy win, typically 50–80% opt-in. Add `amount + (amount * 0.029 + 0.30)` as an optional line.
+- **A real impact number in the hero.** Live SaveSpot count already exists in Supabase; surfacing it on `/donate` would be strong social proof.
+
+---
+
+## 8. Next steps, in priority order
+
+1. **Put the real EIN in `donate-config.ts`.** Blocker.
+2. **Set the three env vars in Netlify with sandbox values, deploy, test a donation with Square's test card `4111 1111 1111 1111` (any future expiry, any CVV).** Confirm the redirect lands on `/donate/thank-you`.
+3. **Flip `SQUARE_ENVIRONMENT=production` with production credentials and run one real $1 donation from your own card.** Refund it from the Square Dashboard. Do not skip this — sandbox passing is not proof that production credentials are right.
+4. **Apply for Square's nonprofit processing rate.**
+5. **Add the `payment.updated` webhook.** Currently we have no record of a donation in our own systems — only Square's dashboard. A webhook route verifying the `x-square-hmacsha256-signature` header against `SQUARE_WEBHOOK_SIGNATURE_KEY` and writing to a Supabase `donations` table would give you a donor list, annual-giving totals for the Form 990, and the ability to send a proper year-end acknowledgment letter. **This is the real gap for gifts ≥ $250.**
+6. **Add monthly giving.**
+7. **Confirm Illinois AG registration is current.**
+
+### A note on the thank-you page amount
+`/donate/thank-you` reads the amount from the query string, which is the figure
+*we asked Square to charge* — not proof of a settled payment, and editable in the
+address bar. It is a courtesy confirmation. The receipt of record is Square's
+email. Step 5 is what turns it into something authoritative.
