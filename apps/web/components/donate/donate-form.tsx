@@ -22,7 +22,8 @@ export function DonateForm() {
   });
   const [frequency, setFrequency] = useState<Frequency>("once");
   const [customAmount, setCustomAmount] = useState("");
-  const [name, setName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -49,7 +50,7 @@ export function DonateForm() {
       const response = await fetch("/api/donate/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount, frequency, name, email }),
+        body: JSON.stringify({ amount, frequency, firstName, lastName, email }),
       });
       const data = await response.json().catch(() => null);
 
@@ -201,41 +202,69 @@ export function DonateForm() {
           </p>
         </div>
 
+        {/* Split into first and last because Square's checkout has separate
+            fields and pre_populated_data.buyer_address wants them apart. A
+            single "Name" box cannot be split back reliably — "Mary Anne van
+            der Berg" has no safe cut point. Still optional: Square asks again
+            and requires only the email, so these just save retyping. */}
         <div className="grid gap-3 sm:grid-cols-2">
           <div>
             <label
-              htmlFor="donor-name"
+              htmlFor="donor-first-name"
               className="mb-1.5 block text-sm font-semibold text-theme-red-dark"
             >
-              Name <span className="font-medium text-theme-red-dark/50">(optional)</span>
+              First name{" "}
+              <span className="font-medium text-theme-red-dark/50">(optional)</span>
             </label>
             <input
-              id="donor-name"
-              name="name"
+              id="donor-first-name"
+              name="firstName"
               type="text"
-              autoComplete="name"
-              value={name}
-              onChange={(event) => setName(event.target.value)}
+              autoComplete="given-name"
+              value={firstName}
+              onChange={(event) => setFirstName(event.target.value)}
               className="w-full rounded-xl border border-theme-red-dark/15 bg-cream px-4 py-3 font-medium text-theme-red-dark outline-none transition-colors focus:border-theme-red focus:bg-white"
             />
           </div>
           <div>
             <label
-              htmlFor="donor-email"
+              htmlFor="donor-last-name"
               className="mb-1.5 block text-sm font-semibold text-theme-red-dark"
             >
-              Email <span className="font-medium text-theme-red-dark/50">(for your receipt)</span>
+              Last name{" "}
+              <span className="font-medium text-theme-red-dark/50">(optional)</span>
             </label>
             <input
-              id="donor-email"
-              name="email"
-              type="email"
-              autoComplete="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
+              id="donor-last-name"
+              name="lastName"
+              type="text"
+              autoComplete="family-name"
+              value={lastName}
+              onChange={(event) => setLastName(event.target.value)}
               className="w-full rounded-xl border border-theme-red-dark/15 bg-cream px-4 py-3 font-medium text-theme-red-dark outline-none transition-colors focus:border-theme-red focus:bg-white"
             />
           </div>
+        </div>
+
+        <div>
+          <label
+            htmlFor="donor-email"
+            className="mb-1.5 block text-sm font-semibold text-theme-red-dark"
+          >
+            Email{" "}
+            <span className="font-medium text-theme-red-dark/50">
+              (for your receipt)
+            </span>
+          </label>
+          <input
+            id="donor-email"
+            name="email"
+            type="email"
+            autoComplete="email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            className="w-full rounded-xl border border-theme-red-dark/15 bg-cream px-4 py-3 font-medium text-theme-red-dark outline-none transition-colors focus:border-theme-red focus:bg-white"
+          />
         </div>
 
         {error && (

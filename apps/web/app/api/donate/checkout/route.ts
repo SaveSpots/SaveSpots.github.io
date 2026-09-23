@@ -25,7 +25,8 @@ interface DonateRequestBody {
   /** Whole US dollars. Cents are handled server-side to avoid float drift. */
   amount?: unknown;
   frequency?: unknown;
-  name?: unknown;
+  firstName?: unknown;
+  lastName?: unknown;
   email?: unknown;
 }
 
@@ -74,8 +75,10 @@ export async function POST(request: Request) {
   // value like 10.005 cannot round up to an extra cent on the donor.
   const amountCents = Math.round(amount * 100);
 
-  const donorName = asTrimmedString(body.name, 120);
+  const firstName = asTrimmedString(body.firstName, 60);
+  const lastName = asTrimmedString(body.lastName, 60);
   const donorEmail = asTrimmedString(body.email, 254);
+  const donorName = [firstName, lastName].filter(Boolean).join(" ") || undefined;
 
   const origin = new URL(request.url).origin;
 
@@ -135,8 +138,24 @@ export async function POST(request: Request) {
         afterpay_clearpay: false,
       },
     },
-    // Prefilling the email means Square emails the donor its own receipt.
-    pre_populated_data: donorEmail ? { buyer_email: donorEmail } : undefined,
+    // Prefills Square's own checkout fields. The email is what makes Square
+    // send its receipt; the name fields just save the donor retyping. Square
+    // still asks for all of it and only requires the email, so sending
+    // nothing here is harmless.
+    pre_populated_data:
+      donorEmail || firstName || lastName
+        ? {
+            ...(donorEmail ? { buyer_email: donorEmail } : {}),
+            ...(firstName || lastName
+              ? {
+                  buyer_address: {
+                    ...(firstName ? { first_name: firstName } : {}),
+                    ...(lastName ? { last_name: lastName } : {}),
+                  },
+                }
+              : {}),
+          }
+        : undefined,
     description: donorName ? `${itemName} from ${donorName}` : itemName,
   };
 
