@@ -147,36 +147,36 @@ export const team: Person[] = [
   {
     name: "Sameer Ilyas",
     role: "Co-Founder",
-    bio: "Add a short bio.", // CONFIRM: Sameer's bio
-    image: "/assets/team/sameer.jpg", // TODO ASSET
+    bio: "Co-founder of SaveSpots. Studying public health at Vanderbilt University.",
+    image: "/assets/team/sameer.jpg",
     linkedin: "https://www.linkedin.com/in/sameer-ilyas-453b5b1b5/",
   },
   {
     name: "Zuhayr Gaffoor",
     role: "Co-Founder",
-    bio: "Co-founder of SaveSpots and an incoming senior studying biomedical sciences.",
-    image: "/assets/team/zuhayr.jpg", // TODO ASSET
+    bio: "Co-founder of SaveSpots, studying biomedical sciences.",
+    image: "/assets/team/zuhayr.jpg",
     linkedin: "https://www.linkedin.com/in/zuhayr-gaffoor-6a9115276/",
   },
   {
     name: "Hammad Ansari",
     role: "Co-Founder",
-    bio: "Co-founder of SaveSpots and an incoming sophomore at the University of Illinois Chicago.",
-    image: "/assets/team/hammad.jpg", // TODO ASSET (none yet)
+    bio: "Co-founder of SaveSpots, studying at the University of Illinois Chicago.",
+    image: "/assets/team/hammad.jpg",
     linkedin: "https://www.linkedin.com/in/hammad-ansari-8a3a49308/",
   },
   {
     name: "Ali Ilyas",
-    role: "Director of Research",
-    bio: "UT Dallas BS in Biology, 2023. An AEMT who leads the SaveSpots research department, studying harm reduction strategy across Dallas County.",
-    image: "/assets/team/ali.jpg", // TODO ASSET
+    role: "Director of Research and Fundraising",
+    bio: "UT Dallas BS in Biology. An AEMT who leads research and fundraising at SaveSpots.",
+    image: "/assets/team/ali.jpg",
     linkedin: "https://www.linkedin.com/in/ali-ilyas-7b002b1a3/",
   },
   {
     name: "Ishan Patel",
     role: "Financial Manager",
-    bio: "Add a short bio.", // CONFIRM: Ishan's bio
-    image: "/assets/team/ishan.jpg", // TODO ASSET
+    bio: "Donor outreach management at SaveSpots and biochemistry at Vanderbilt University.",
+    image: "/assets/team/ishan.jpg",
     linkedin: "https://www.linkedin.com/in/ishan-patel-845043217/",
   },
 ];
@@ -200,7 +200,8 @@ export const researchers: Researcher[] = [
   {
     name: "Ali Ilyas",
     city: "Dallas County, TX",
-    bio: "UT Dallas BS in Biology, 2023. An AEMT and Director of Research at SaveSpots, studying harm reduction strategy across Dallas County.",
+    // The card already shows the city, so the bio does not repeat it.
+    bio: "UT Dallas BS in Biology. An AEMT who leads research and fundraising at SaveSpots.",
     image: "/assets/researchers/ali-ilyas.jpg", // TODO ASSET
     linkedin: "https://www.linkedin.com/in/ali-ilyas-7b002b1a3/",
   },
