@@ -32,7 +32,12 @@ export interface GiftTier {
  */
 export const giftTiers: GiftTier[] = [
   { amount: 25, funds: "1 SaveKit", lives: "~1 life saved" },
+  // The in-between rungs are derived from the $25-per-kit unit rather than
+  // invented, so a donor who does the arithmetic finds it holds: three kits is
+  // half a box, and $300 is a box plus one full restock of six more kits.
+  { amount: 75, funds: "3 SaveKits — half a SaveBox", lives: "~3 lives saved" },
   { amount: 150, funds: "1 SaveBox", lives: "~6 lives saved", featured: true },
+  { amount: 300, funds: "1 SaveBox plus a full restock", lives: "~12 lives saved" },
   { amount: 500, funds: "1 SaveBox stocked for three months", lives: "20+ lives saved" },
 ];
 

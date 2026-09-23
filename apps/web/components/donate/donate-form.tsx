@@ -117,7 +117,7 @@ export function DonateForm() {
               the gift buys and roughly how far it reaches, and that does not
               fit in a pill. These are selectable cards, so they take the
               card radius from the locked shape system, not the button pill. */}
-          <div className="mt-3 space-y-2.5">
+          <div className="mt-3 space-y-2">
             {giftTiers.map((tier) => {
               const isActive =
                 selection.kind === "tier" && selection.amount === tier.amount;
@@ -129,7 +129,7 @@ export function DonateForm() {
                   aria-pressed={isActive}
                   whileHover={{ scale: 1.01 }}
                   whileTap={{ scale: 0.99 }}
-                  className={`flex w-full items-center justify-between gap-3 rounded-3xl px-5 py-4 text-left transition-colors ${
+                  className={`flex w-full items-center justify-between gap-3 rounded-3xl px-5 py-3.5 text-left transition-colors ${
                     isActive
                       ? "bg-theme-red text-white"
                       : "bg-cream text-theme-red-dark hover:bg-cream-dark"
