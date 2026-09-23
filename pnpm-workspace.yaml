@@ -2,8 +2,11 @@ packages:
   - "apps/*"
   - "packages/*"
 
+# sharp ships prebuilt binaries and needs its install script to select the
+# right one. Written by pnpm as a placeholder when it added the QR tooling;
+# left unanswered it is not valid config.
 allowBuilds:
-  sharp: set this to true or false
+  sharp: true
 
 # Expo/Metro and EAS cloud builds need a flat node_modules — React Native's
 # resolver does not follow pnpm's symlinked layout. pnpm v10+ reads this from
