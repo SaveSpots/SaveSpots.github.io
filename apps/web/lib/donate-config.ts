@@ -51,7 +51,7 @@ export const org = {
   ein: "39-3700157",
   /** CONFIRM — registered address on the Form 990 / state registration. */
   address: "Chicago, Illinois",
-  email: "savespotsinfo@gmail.com",
+  email: "sameer@savespots.org",
 } as const;
 
 /**
