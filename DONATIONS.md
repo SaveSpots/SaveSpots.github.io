@@ -259,11 +259,72 @@ embedding the Web Payments SDK and taking on SAQ-A-EP.
 
 ---
 
+## 7c. Receipts: what donors actually get
+
+Three different documents get confused with each other. They are not the same thing.
+
+| | What it is | Who sends it | Status |
+|---|---|---|---|
+| Payment receipt | Proof a card was charged | Square, automatically | Working |
+| Contribution acknowledgment | The IRS document a donor needs to deduct the gift | Us | **Needs the Dashboard step below** |
+| Year-end summary | One letter totalling a donor's giving for the year | Us | Not built — needs the webhook |
+
+### Every donor does get a receipt
+
+Square's hosted checkout marks the email field `aria-required="true"` and will not
+submit without it, so there is no path where a donor pays and no receipt is sent.
+The optional email box on `/donate` only pre-fills that field through
+`pre_populated_data.buyer_email` — it saves the donor retyping, it is not what
+makes the receipt happen. Leaving it blank costs nothing.
+
+### What Square's receipt does NOT say
+
+It is a payment receipt. It does not carry the IRS language, and Square does not
+generate tax-compliant donation receipts on its own.
+
+IRS Publication 1771: a gift of **$250 or more** needs a contemporaneous written
+acknowledgment stating the amount and that **no goods or services were provided
+in exchange**. Without that sentence the donor cannot claim the deduction.
+
+### The fix — Square Dashboard, once, two minutes
+
+**Square Dashboard → Settings → Receipts → Custom Text**
+
+Paste this (it matches the strings in `apps/web/lib/donate-config.ts`, so keep
+the two in sync if either changes):
+
+```
+Thank you for supporting SaveSpots. SaveSpots NFP is a tax-exempt organization
+under Section 501(c)(3) of the Internal Revenue Code (EIN 39-3700157).
+Contributions are tax-deductible to the extent allowed by law. No goods or
+services were provided in exchange for this contribution.
+Questions: savespotsinfo@gmail.com
+```
+
+That footer lands on every Square receipt, which turns each one into a valid
+acknowledgment for gifts of any size — including the $250+ ones that legally
+require it. **Until this is set, donors giving $250 or more have no document
+that satisfies the IRS.**
+
+`/donate/thank-you` already shows the same language on screen, but an on-screen
+page a donor may never revisit is weak substantiation. The emailed receipt is
+what they keep.
+
+### What still needs building
+
+- **Year-end summary letters.** A monthly donor giving $25 gets twelve separate receipts and no annual total. Standard practice is one January letter.
+- **Our own donor records.** We currently have none outside Square's dashboard — no donor list, no annual totals for the Form 990.
+
+Both need the `payment.updated` webhook in §8. That is the one remaining piece.
+
+---
+
 ## 8. Next steps, in priority order
 
 1. **Put the real EIN in `donate-config.ts`.** Still `00-0000000`. Blocker before promoting the page. (The legal name `SaveSpots NFP` is confirmed — it matches the Square location.)
 2. **Rotate the Square access token.** The production token was pasted into a chat transcript during setup. Revoke and regenerate it in **Developer → Credentials**, then set the new value in Netlify only.
-3. **Set the three env vars in Netlify** (`SQUARE_ACCESS_TOKEN`, `SQUARE_LOCATION_ID=LSBWS8RSGE4KW`, `SQUARE_ENVIRONMENT=production`). They exist locally in `apps/web/.env.local`; Netlify has its own copy and the site will 503 on donations until they are set there.
+3. ~~Set the three env vars in Netlify.~~ **Done** — all three are set on the `savespots` site and verified against production. Note that setting variables does not touch a running site; a rebuild was needed for the functions to pick them up.
+3b. **Set the receipt Custom Text in the Square Dashboard** — §7c. Two minutes, and until it is done no donor giving $250 or more has an IRS-valid acknowledgment.
 4. **Brand the Square checkout page** — §7b, five minutes in the Dashboard.
 5. **Run one real $1 donation from your own card and refund it.** Then one $1 monthly gift; cancel the subscription from the Dashboard. Do not skip the monthly test — it exercises a different code path.
 6. **Apply for Square's nonprofit processing rate.**
