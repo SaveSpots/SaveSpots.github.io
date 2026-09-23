@@ -6,6 +6,7 @@ import { HeaderTransition } from "@/components/layout/header-transition";
 import { ConsistentButton } from "@/components/shared/consistent-button";
 import { InfiniteLogoCarousel } from "@/components/shared/infinite-logo-carousel";
 import Link from "next/link";
+import { cta } from "@/lib/site-data";
 
 interface HeroSectionProps {
   isLoading: boolean;
@@ -68,9 +69,11 @@ export function HeroSection({ isLoading }: HeroSectionProps) {
             ease: "easeOut",
           }}
         >
-          <Link href="https://savespots.fillout.com/savebox" target="_blank">
+          {/* Internal route, so no target="_blank" — sending a donor to a new
+              tab loses the back button they need if they change their mind. */}
+          <Link href={cta.donate.href}>
             <ConsistentButton variant="primary">
-              Host a SaveBox at Your Location
+              {cta.donate.label}
             </ConsistentButton>
           </Link>
         </motion.div>

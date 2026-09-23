@@ -354,4 +354,8 @@ export const cta = {
     label: "Host a SaveBox",
     href: "https://savespots.fillout.com/savebox",
   },
+  donate: {
+    label: "Donate Today",
+    href: "/donate",
+  },
 } as const;
