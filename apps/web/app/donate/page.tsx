@@ -13,7 +13,7 @@ import {
 export const metadata: Metadata = {
   title: "Donate | SaveSpots",
   description:
-    "Fund naloxone and fentanyl test strips in the Chicago neighborhoods that need them most. SaveSpots is a 501(c)(3) nonprofit — your gift is tax-deductible.",
+    "Fund naloxone and fentanyl test strips in the neighborhoods that need them most. $25 stocks a SaveKit, $150 places a SaveBox. SaveSpots is a 501(c)(3) nonprofit — your gift is tax-deductible.",
   alternates: { canonical: "https://savespots.org/donate" },
   openGraph: {
     title: "Donate to SaveSpots",
@@ -27,12 +27,12 @@ const reasons = [
   {
     icon: MapPin,
     title: "Where people already are",
-    body: "SaveBoxes go into gas stations, laundromats, shelters and transit stops — not clinics people never reach.",
+    body: "SaveBoxes go where people live their lives: gas stations, corner stores, barber shops and more.",
   },
   {
     icon: Repeat,
     title: "Stocked, not just placed",
-    body: "A box only saves a life if it is full. Donations fund the restock cycle, not just the install.",
+    body: "SaveBoxes only save lives if they're full. Donations fund the restock cycle, not just the install.",
   },
   {
     icon: HeartHandshake,
@@ -80,9 +80,10 @@ export default function DonatePage() {
               An overdose is reversible. Only if the naloxone is close enough.
             </h1>
             <p className="mt-6 max-w-xl text-lg font-medium leading-relaxed text-white/85 md:text-xl">
-              SaveSpots puts free naloxone and fentanyl test strips in everyday
-              Chicago locations — then keeps them stocked. Your gift funds the
-              supplies, the boxes, and the restocks.
+              SaveSpots places free naloxone and fentanyl test strips in our
+              cities, then keeps them stocked. Your gift funds the supplies, the
+              boxes, restocks, and logistical costs associated with our
+              research-driven mission.
             </p>
 
           </div>

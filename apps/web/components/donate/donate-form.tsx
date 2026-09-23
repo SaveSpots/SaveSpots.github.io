@@ -33,11 +33,6 @@ export function DonateForm() {
     return Number.isFinite(parsed) ? parsed : 0;
   }, [selection, customAmount]);
 
-  const activeImpact =
-    selection.kind === "tier"
-      ? giftTiers.find((tier) => tier.amount === selection.amount)?.impact
-      : undefined;
-
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
     setError(null);
@@ -118,7 +113,11 @@ export function DonateForm() {
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-theme-red/70">
             Choose an amount
           </p>
-          <div className="mt-3 grid grid-cols-2 gap-3">
+          {/* Full-width rows, not a 2x2 pill grid: each tier now carries what
+              the gift buys and roughly how far it reaches, and that does not
+              fit in a pill. These are selectable cards, so they take the
+              card radius from the locked shape system, not the button pill. */}
+          <div className="mt-3 space-y-2.5">
             {giftTiers.map((tier) => {
               const isActive =
                 selection.kind === "tier" && selection.amount === tier.amount;
@@ -128,18 +127,38 @@ export function DonateForm() {
                   type="button"
                   onClick={() => setSelection({ kind: "tier", amount: tier.amount })}
                   aria-pressed={isActive}
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  className={`rounded-full px-4 py-4 text-lg font-bold transition-colors ${
+                  whileHover={{ scale: 1.01 }}
+                  whileTap={{ scale: 0.99 }}
+                  className={`flex w-full items-center justify-between gap-3 rounded-3xl px-5 py-4 text-left transition-colors ${
                     isActive
                       ? "bg-theme-red text-white"
                       : "bg-cream text-theme-red-dark hover:bg-cream-dark"
                   }`}
                 >
-                  ${tier.amount}
-                  {frequency === "monthly" && (
-                    <span className="text-sm font-semibold opacity-70">/mo</span>
-                  )}
+                  <span className="min-w-0">
+                    <span className="flex items-baseline gap-1 text-xl font-extrabold">
+                      ${tier.amount}
+                      {frequency === "monthly" && (
+                        <span className="text-sm font-semibold opacity-70">/mo</span>
+                      )}
+                    </span>
+                    <span
+                      className={`mt-0.5 block text-sm font-medium ${
+                        isActive ? "text-white/85" : "text-theme-red-dark/70"
+                      }`}
+                    >
+                      {tier.funds}
+                    </span>
+                  </span>
+                  <span
+                    className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-bold ${
+                      isActive
+                        ? "bg-white/15 text-white"
+                        : "bg-theme-red/10 text-theme-red"
+                    }`}
+                  >
+                    {tier.lives}
+                  </span>
                 </motion.button>
               );
             })}
@@ -177,11 +196,9 @@ export function DonateForm() {
             </div>
           </div>
 
-          {activeImpact && (
-            <p className="mt-3 text-sm font-medium text-theme-red-dark/70">
-              {activeImpact}.
-            </p>
-          )}
+          <p className="mt-3 text-xs font-medium leading-relaxed text-theme-red-dark/55">
+            Coverage figures are approximate.
+          </p>
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2">
