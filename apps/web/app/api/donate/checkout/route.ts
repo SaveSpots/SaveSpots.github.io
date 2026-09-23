@@ -1,5 +1,6 @@
 /**
  * Creates a Square-hosted checkout page for a donation and returns its URL.
+ * Handles both one-time gifts and monthly recurring giving.
  *
  * WHY HOSTED CHECKOUT, NOT AN INLINE CARD FORM: card data never touches
  * savespots.org this way, which keeps us on SAQ-A — the shortest PCI
@@ -7,35 +8,23 @@
  * Google Pay, Cash App Pay and 3-D Secure for free. The trade-off is one
  * redirect off-site; a donor never types a card number here.
  *
- * The Square access token is server-only. It must never reach the browser, so
- * this route exists purely to hold it.
- *
  * Docs: POST /v2/online-checkout/payment-links (Checkout API).
  */
 
 import { NextResponse } from "next/server";
 import { MAX_GIFT_USD, MIN_GIFT_USD, org } from "@/lib/donate-config";
+import { SquareError, requireSquareConfig, squareFetch } from "@/lib/square";
+import { ensureMonthlyVariationId } from "@/lib/square-donation-plan";
 
-// Square's hosted checkout is created per-request, so this can never be static.
+// Square-hosted checkout is created per-request, so this can never be static.
 export const dynamic = "force-dynamic";
 
-/**
- * Pinned rather than floating: Square treats the version header as an API
- * contract, and an unpinned request silently follows breaking changes.
- */
-const SQUARE_VERSION = "2026-09-16";
-
-function squareBaseUrl() {
-  // Anything other than an explicit "production" stays on sandbox, so a
-  // misconfigured deploy fails safe into test money rather than real money.
-  return process.env.SQUARE_ENVIRONMENT === "production"
-    ? "https://connect.squareup.com"
-    : "https://connect.squareupsandbox.com";
-}
+type Frequency = "once" | "monthly";
 
 interface DonateRequestBody {
   /** Whole US dollars. Cents are handled server-side to avoid float drift. */
   amount?: unknown;
+  frequency?: unknown;
   name?: unknown;
   email?: unknown;
 }
@@ -47,10 +36,10 @@ function asTrimmedString(value: unknown, max: number): string | undefined {
 }
 
 export async function POST(request: Request) {
-  const accessToken = process.env.SQUARE_ACCESS_TOKEN;
-  const locationId = process.env.SQUARE_LOCATION_ID;
-
-  if (!accessToken || !locationId) {
+  let locationId: string;
+  try {
+    ({ locationId } = requireSquareConfig());
+  } catch {
     // Deliberately vague to the donor, loud in the server logs: the donor can
     // do nothing about this, and the message would leak our config state.
     console.error(
@@ -68,6 +57,8 @@ export async function POST(request: Request) {
   } catch {
     return NextResponse.json({ error: "Invalid request." }, { status: 400 });
   }
+
+  const frequency: Frequency = body.frequency === "monthly" ? "monthly" : "once";
 
   const amount = Number(body.amount);
   if (!Number.isFinite(amount) || amount < MIN_GIFT_USD || amount > MAX_GIFT_USD) {
@@ -88,66 +79,92 @@ export async function POST(request: Request) {
 
   const origin = new URL(request.url).origin;
 
+  // A monthly gift charges a subscription plan variation, and Square requires
+  // one variation per price point. This resolves (or creates) the variation
+  // for this amount before the link is built.
+  let subscriptionPlanId: string | undefined;
+  if (frequency === "monthly") {
+    try {
+      subscriptionPlanId = await ensureMonthlyVariationId(amountCents);
+    } catch (error) {
+      console.error("[donate] Could not resolve a monthly plan variation:", {
+        amountCents,
+        errors: error instanceof SquareError ? error.errors : error,
+      });
+      return NextResponse.json(
+        {
+          error:
+            "We could not set up a monthly gift right now. A one-time gift will work, or email us and we will take it from there.",
+        },
+        { status: 502 }
+      );
+    }
+  }
+
+  const itemName =
+    frequency === "monthly"
+      ? "Monthly donation to SaveSpots"
+      : "Donation to SaveSpots";
+
   const payload = {
     // Square dedupes on this key, so a double-click cannot create two links.
     idempotency_key: crypto.randomUUID(),
     quick_pay: {
-      name: "Donation to SaveSpots",
+      name: itemName,
+      // For a subscription this must match the variation's price exactly.
       price_money: { amount: amountCents, currency: "USD" },
       location_id: locationId,
     },
     checkout_options: {
-      redirect_url: `${origin}/donate/thank-you?amount=${amountCents}`,
+      redirect_url: `${origin}/donate/thank-you?amount=${amountCents}&frequency=${frequency}`,
       // A donation ships nothing and should not prompt for a tip on top.
       ask_for_shipping_address: false,
       allow_tipping: false,
+      // A coupon box on a donation page is noise at best and an invitation to
+      // hunt for a discount code at worst.
+      enable_coupon: false,
+      enable_loyalty: false,
+      ...(subscriptionPlanId ? { subscription_plan_id: subscriptionPlanId } : {}),
       accepted_payment_methods: {
         apple_pay: true,
         google_pay: true,
-        cash_app_pay: true,
+        // Square does not support Cash App Pay or Afterpay on subscriptions,
+        // and sending them anyway makes the whole request fail.
+        cash_app_pay: frequency === "once",
         // Buy-now-pay-later on a charitable gift is a support burden, not a feature.
         afterpay_clearpay: false,
       },
     },
     // Prefilling the email means Square emails the donor its own receipt.
     pre_populated_data: donorEmail ? { buyer_email: donorEmail } : undefined,
-    description: donorName
-      ? `Donation from ${donorName}`
-      : "Donation to SaveSpots",
+    description: donorName ? `${itemName} from ${donorName}` : itemName,
   };
 
-  let response: Response;
   try {
-    response = await fetch(`${squareBaseUrl()}/v2/online-checkout/payment-links`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Square-Version": SQUARE_VERSION,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    });
-  } catch (error) {
-    console.error("[donate] Could not reach Square:", error);
-    return NextResponse.json(
-      { error: "We could not reach our payment processor. Please try again." },
-      { status: 502 }
+    const result = await squareFetch<{ payment_link?: { url?: string } }>(
+      "/v2/online-checkout/payment-links",
+      { method: "POST", body: payload }
     );
-  }
 
-  const result = await response.json().catch(() => null);
+    if (!result.payment_link?.url) {
+      console.error("[donate] Square returned no checkout URL:", result);
+      return NextResponse.json(
+        { error: "We could not start the payment. Please try again." },
+        { status: 502 }
+      );
+    }
 
-  if (!response.ok || !result?.payment_link?.url) {
+    return NextResponse.json({ url: result.payment_link.url });
+  } catch (error) {
     // Square's own error text can name internal fields, so it stays in the log.
     console.error("[donate] Square rejected the payment link request:", {
-      status: response.status,
-      errors: result?.errors,
+      frequency,
+      amountCents,
+      errors: error instanceof SquareError ? error.errors : error,
     });
     return NextResponse.json(
       { error: "We could not start the payment. Please try again." },
       { status: 502 }
     );
   }
-
-  return NextResponse.json({ url: result.payment_link.url as string });
 }

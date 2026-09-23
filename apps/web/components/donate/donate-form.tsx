@@ -11,6 +11,7 @@ import {
 } from "@/lib/donate-config";
 
 type Selection = { kind: "tier"; amount: number } | { kind: "custom" };
+type Frequency = "once" | "monthly";
 
 const defaultTier = giftTiers.find((tier) => tier.featured) ?? giftTiers[0];
 
@@ -19,6 +20,7 @@ export function DonateForm() {
     kind: "tier",
     amount: defaultTier.amount,
   });
+  const [frequency, setFrequency] = useState<Frequency>("once");
   const [customAmount, setCustomAmount] = useState("");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -52,7 +54,7 @@ export function DonateForm() {
       const response = await fetch("/api/donate/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount, name, email }),
+        body: JSON.stringify({ amount, frequency, name, email }),
       });
       const data = await response.json().catch(() => null);
 
@@ -79,6 +81,39 @@ export function DonateForm() {
       <fieldset disabled={isSubmitting} className="space-y-6">
         <legend className="sr-only">Choose your donation amount</legend>
 
+        {/* Monthly first in the DOM but not preselected: recurring donors are
+            worth several times a one-time donor, so the option has to be
+            visible before the amount is chosen — but defaulting to a
+            recurring charge nobody asked for is a chargeback waiting to
+            happen. */}
+        <div
+          role="radiogroup"
+          aria-label="Giving frequency"
+          className="flex rounded-full bg-cream p-1"
+        >
+          {(
+            [
+              { value: "once", label: "One-time" },
+              { value: "monthly", label: "Monthly" },
+            ] as const
+          ).map(({ value, label }) => (
+            <button
+              key={value}
+              type="button"
+              role="radio"
+              aria-checked={frequency === value}
+              onClick={() => setFrequency(value)}
+              className={`flex-1 rounded-full px-4 py-2.5 text-sm font-bold transition-colors ${
+                frequency === value
+                  ? "bg-theme-red text-white"
+                  : "text-theme-red-dark/70 hover:text-theme-red-dark"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-theme-red/70">
             Choose an amount
@@ -102,6 +137,9 @@ export function DonateForm() {
                   }`}
                 >
                   ${tier.amount}
+                  {frequency === "monthly" && (
+                    <span className="text-sm font-semibold opacity-70">/mo</span>
+                  )}
                 </motion.button>
               );
             })}
@@ -204,9 +242,24 @@ export function DonateForm() {
             <>
               <Lock className="h-5 w-5" />
               Donate {amount > 0 ? `$${amount.toLocaleString()}` : ""}
+              {frequency === "monthly" ? " monthly" : ""}
             </>
           )}
         </motion.button>
+
+        {frequency === "monthly" && (
+          <p className="rounded-xl bg-cream px-4 py-3 text-xs font-medium leading-relaxed text-theme-red-dark/70">
+            You will be charged ${amount > 0 ? amount.toLocaleString() : "0"} today
+            and on the same day each month. Cancel any time by emailing{" "}
+            <a
+              href={`mailto:${org.email}`}
+              className="font-semibold underline underline-offset-2"
+            >
+              {org.email}
+            </a>
+            .
+          </p>
+        )}
 
         <p className="flex items-start gap-2 text-xs font-medium leading-relaxed text-theme-red-dark/60">
           <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0" />

@@ -13,6 +13,8 @@ Covers `/donate`, `/donate/thank-you`, and `POST /api/donate/checkout`.
 | Server route that creates the Square checkout | `apps/web/app/api/donate/checkout/route.ts` |
 | Post-payment confirmation / on-screen acknowledgment | `apps/web/app/donate/thank-you/page.tsx` |
 | Legal strings, EIN, gift tiers | `apps/web/lib/donate-config.ts` |
+| Square API client (token, base URL, pinned version) | `apps/web/lib/square.ts` |
+| Monthly giving: amount -> subscription plan variation | `apps/web/lib/square-donation-plan.ts` |
 | Donate button in nav + footer | `apps/web/components/layout/navbar.tsx`, `footer.tsx` |
 
 `Donate` is now the only filled button in the nav bar. `Volunteer Portal` dropped to
@@ -172,21 +174,102 @@ Researched against nonprofit fundraising norms; each row says what the page does
 | No tipping prompt, no BNPL | Both disabled. A tip prompt on a charitable gift reads as a second ask; buy-now-pay-later on a donation is a support burden. |
 
 ### Deliberately deferred
-- **Recurring / monthly giving.** The single highest-value addition — recurring donors are worth several times a one-time donor. It needs Square's Subscriptions API plus a catalog subscription plan, which is a bigger build than payment links. See §8.
 - **"Cover the processing fee" checkbox.** Easy win, typically 50–80% opt-in. Add `amount + (amount * 0.029 + 0.30)` as an optional line.
 - **A real impact number in the hero.** Live SaveSpot count already exists in Supabase; surfacing it on `/donate` would be strong social proof.
 
 ---
 
+## 7a. Monthly giving (Subscriptions API)
+
+Recurring donors are worth several times a one-time donor, so `/donate` carries a
+One-time / Monthly toggle. One-time is the default — defaulting a visitor into a
+recurring charge is a chargeback waiting to happen.
+
+### The constraint that shapes the design
+
+Square cannot charge an arbitrary recurring amount from a payment link. A donor
+subscribes to a **subscription plan variation**, and a variation has a **fixed
+price**. So every distinct monthly amount needs its own catalog variation.
+
+Two bad options and the one we took:
+
+- Pre-create a variation per suggested tier, reject custom monthly amounts — donors who want $37/month are turned away.
+- Create a variation per donor — the catalog fills with thousands of near-identical objects.
+- **Create variations lazily and reuse them.** The first donor to give $37/month creates `SaveSpots Monthly Giving — $37.00`; every later $37 donor reuses it. The catalog grows with the number of *distinct amounts*, not the number of donors.
+
+`lib/square-donation-plan.ts` does this. It memoizes within a server instance and
+falls back to reading the catalog on a cold start, so the cache is never a source
+of truth.
+
+### The call chain
+
+```
+frequency: "monthly"
+      │
+      ▼
+ensureMonthlyVariationId(amountCents)
+      │  GET /v2/catalog/list?types=SUBSCRIPTION_PLAN          find or create "SaveSpots Monthly Giving"
+      │  GET /v2/catalog/list?types=SUBSCRIPTION_PLAN_VARIATION find or create the $X/month variation
+      ▼
+CreatePaymentLink with checkout_options.subscription_plan_id = <variation id>
+      │  quick_pay.price_money must match the variation price exactly
+      ▼
+Square checkout shows "$25.00 / month"
+```
+
+### Details that are easy to get wrong
+
+- `subscription_plan_id` takes the **variation** id, not the plan id. Passing the plan id fails.
+- The phase uses `pricing.price_money`, not `pricing.price`. Square's own guide pages disagree with each other here; `price_money` is what API version `2026-09-16` accepts. Verified against production.
+- `periods` is **omitted** on purpose. Setting it would silently end the donor's giving after N months.
+- Square does **not** support Cash App Pay or Afterpay on subscriptions. The route turns Cash App Pay off for monthly gifts; sending it anyway fails the whole request.
+- `enable_coupon: false` and `enable_loyalty: false` are set on both flows. A coupon box on a donation page invites people to go hunting for a discount code.
+
+### Cancellation
+
+Donors currently cancel by emailing us, and we cancel from the Square Dashboard
+(**Payments & orders → Subscriptions**). That is honest and it is what the page
+says, but it is manual. A self-serve cancel link is worth building once monthly
+volume is real.
+
+---
+
+## 7b. Branding the Square checkout page
+
+The checkout page is Square's, not ours, so branding is a **Dashboard setting —
+there is no API for it**. Out of the box it is a plain white page with
+"SaveSpots NFP" as text and no logo.
+
+**Square Dashboard → Payments & orders → Payment links → Settings → Branding**
+
+| Control | Set it to | Why |
+|---|---|---|
+| Logo | `apps/web/public/assets/SaveSpotsLogo.png` | Without it the page is a bare text header, which reads as a phishing risk to a cautious donor. |
+| Button colour | `#5a2532` | `theme-red`, the brand backbone. |
+| Button shape | Rounded / pill | The shape system in `BRAND_GUIDE.md` is locked to pills. |
+| Font | Closest geometric sans in the dropdown | Plus Jakarta Sans is not offered; pick the nearest. |
+
+The logo also comes from **Location settings**, so set it there too if the
+branding panel does not pick it up.
+
+**What you cannot change:** the page layout, the Square footer, and the
+`checkout.square.site` domain. Square's hosted checkout cannot be white-labelled.
+That is the price of staying on PCI SAQ-A — see §2. Full brand control means
+embedding the Web Payments SDK and taking on SAQ-A-EP.
+
+---
+
 ## 8. Next steps, in priority order
 
-1. **Put the real EIN in `donate-config.ts`.** Blocker.
-2. **Set the three env vars in Netlify with sandbox values, deploy, test a donation with Square's test card `4111 1111 1111 1111` (any future expiry, any CVV).** Confirm the redirect lands on `/donate/thank-you`.
-3. **Flip `SQUARE_ENVIRONMENT=production` with production credentials and run one real $1 donation from your own card.** Refund it from the Square Dashboard. Do not skip this — sandbox passing is not proof that production credentials are right.
-4. **Apply for Square's nonprofit processing rate.**
-5. **Add the `payment.updated` webhook.** Currently we have no record of a donation in our own systems — only Square's dashboard. A webhook route verifying the `x-square-hmacsha256-signature` header against `SQUARE_WEBHOOK_SIGNATURE_KEY` and writing to a Supabase `donations` table would give you a donor list, annual-giving totals for the Form 990, and the ability to send a proper year-end acknowledgment letter. **This is the real gap for gifts ≥ $250.**
-6. **Add monthly giving.**
-7. **Confirm Illinois AG registration is current.**
+1. **Put the real EIN in `donate-config.ts`.** Still `00-0000000`. Blocker before promoting the page. (The legal name `SaveSpots NFP` is confirmed — it matches the Square location.)
+2. **Rotate the Square access token.** The production token was pasted into a chat transcript during setup. Revoke and regenerate it in **Developer → Credentials**, then set the new value in Netlify only.
+3. **Set the three env vars in Netlify** (`SQUARE_ACCESS_TOKEN`, `SQUARE_LOCATION_ID=LSBWS8RSGE4KW`, `SQUARE_ENVIRONMENT=production`). They exist locally in `apps/web/.env.local`; Netlify has its own copy and the site will 503 on donations until they are set there.
+4. **Brand the Square checkout page** — §7b, five minutes in the Dashboard.
+5. **Run one real $1 donation from your own card and refund it.** Then one $1 monthly gift; cancel the subscription from the Dashboard. Do not skip the monthly test — it exercises a different code path.
+6. **Apply for Square's nonprofit processing rate.**
+7. **Add the `payment.updated` webhook.** We still have no record of a donation in our own systems — only Square's dashboard. A route verifying the `x-square-hmacsha256-signature` header against `SQUARE_WEBHOOK_SIGNATURE_KEY` and writing to a Supabase `donations` table would give you a donor list, annual totals for the Form 990, and proper year-end acknowledgment letters. **This is the real gap for gifts of $250 or more.**
+8. **Self-serve subscription cancellation** once monthly volume justifies it.
+9. **Confirm Illinois AG charitable registration is current** — see §6.
 
 ### A note on the thank-you page amount
 `/donate/thank-you` reads the amount from the query string, which is the figure
