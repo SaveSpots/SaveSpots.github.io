@@ -21,6 +21,7 @@ import {
   type Savebox,
 } from "@savespots/shared";
 import { getSupabase } from "@/lib/supabase-browser";
+import { QrScanAnalytics } from "@/components/portal/qr-scan-analytics";
 
 const card = "rounded-2xl bg-white p-5 shadow-sm";
 const btn =
@@ -361,6 +362,8 @@ export default function AdminPage() {
             </p>
           ) : null}
         </section>
+
+        <QrScanAnalytics db={db} />
 
         {/* Recent check-ins */}
         <section className="mt-8">
