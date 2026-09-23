@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowLeft, HeartHandshake, MapPin, Repeat } from "lucide-react";
 
 import { DonateForm } from "@/components/donate/donate-form";
+import { DonationAnatomy } from "@/components/donate/anatomy";
 import {
   TAX_DEDUCTIBLE_NOTICE,
   UNRESTRICTED_NOTICE,
@@ -105,6 +106,10 @@ export default function DonatePage() {
                 </div>
               </div>
             ))}
+
+            <div className="border-t border-white/10 pt-8">
+              <DonationAnatomy />
+            </div>
           </div>
 
           {/* The form */}
