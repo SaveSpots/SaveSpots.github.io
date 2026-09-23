@@ -310,12 +310,28 @@ that satisfies the IRS.**
 page a donor may never revisit is weak substantiation. The emailed receipt is
 what they keep.
 
-### What still needs building
+### Built: the acknowledgment pipeline
 
-- **Year-end summary letters.** A monthly donor giving $25 gets twelve separate receipts and no annual total. Standard practice is one January letter.
-- **Our own donor records.** We currently have none outside Square's dashboard — no donor list, no annual totals for the Form 990.
+`POST /api/donate/webhook` is subscribed to Square's `payment.updated` event
+(subscription `wbhk_2750acebf4474f538416882e1acebf2a`). On a COMPLETED payment it
+writes a row to `public.donations` and emails the donor a Pub. 1771-compliant
+acknowledgment via Resend, from `noreply@savespots.org`.
 
-Both need the `payment.updated` webhook in §8. That is the one remaining piece.
+Things worth knowing before changing any of it:
+
+- **The signature check is the whole security model.** The endpoint is public. Square signs `notification_url + raw_body`, so the URL in `SQUARE_WEBHOOK_NOTIFICATION_URL` must match the subscription EXACTLY — change one and the other stops verifying. The raw body is hashed before parsing, because re-serializing JSON changes whitespace and key order and the signature would never match again.
+- **Deliveries are at-least-once.** `square_payment_id` is unique and the insert ignores duplicates. That is what stops one gift producing five acknowledgment emails.
+- **Failure handling is asymmetric on purpose.** A storage failure returns 500 so Square retries; losing a donation record is worse than a duplicate delivery, which the unique constraint absorbs. An email failure returns 200 and records the reason in `receipt_error` — a retry would hit the duplicate guard and skip the email forever, so the stored error is what a sweep job reads instead.
+- **`public.donations` has RLS on and no policies.** Only the service role can reach it. The portal has volunteer logins, and a volunteer has no business reading donor names, emails and amounts. Verified: an anon insert is rejected with `42501`.
+
+Verified in production: forged and unsigned requests get 401; a correctly signed
+event records the gift and emails the receipt; a replay of the same event returns
+`duplicate` and sends nothing. A real $1 donation went through the whole path.
+
+### Still not built
+
+- **Year-end summary letters.** A monthly donor giving $25 gets twelve separate acknowledgments and no annual total. Standard practice is one January letter. The data is now there to generate them.
+- **A retry sweep** for rows where `receipt_error` is set and `receipt_sent_at` is null.
 
 ---
 
