@@ -11,6 +11,12 @@
     "web:dev": "pnpm --filter @savespots/web dev",
     "web:build": "pnpm --filter @savespots/web build",
     "mobile": "pnpm --filter @savespots/mobile",
-    "mobile:start": "pnpm --filter @savespots/mobile start"
+    "mobile:start": "pnpm --filter @savespots/mobile start",
+    "qr": "node scripts/generate-qr.mjs"
+  },
+  "devDependencies": {
+    "qrcode": "^1.5.4",
+    "jsqr": "^1.4.0",
+    "sharp": "^0.34.4"
   }
 }

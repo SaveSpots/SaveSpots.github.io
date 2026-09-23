@@ -49,3 +49,6 @@ apps/mobile/store.config.json
 
 # Local Netlify folder
 .netlify
+
+# Generated QR artwork — rebuild with `pnpm qr`
+qr-codes/
