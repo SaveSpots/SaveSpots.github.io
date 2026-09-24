@@ -42,20 +42,22 @@ export function TeamSection() {
                 initials={initialsFromName(person.name)}
                 className="aspect-square w-full object-cover"
               />
-              <div className="flex flex-1 flex-col p-6">
+              {/* Bios are intentionally not rendered — see `bio` in site-data,
+                  which keeps the copy for when they go back up. */}
+              <div className="flex flex-1 flex-col p-5">
                 <h3 className="font-display text-xl font-bold text-theme-red-dark">
                   {person.name}
                 </h3>
-                <p className="mt-3 flex-1 text-sm leading-relaxed text-gray-600">
-                  {person.bio}
-                </p>
                 {person.linkedin && (
                   <a
                     href={person.linkedin}
                     target="_blank"
                     rel="noreferrer"
                     aria-label={`${person.name} on LinkedIn`}
-                    className="mt-4 inline-flex h-9 w-9 items-center justify-center rounded-full bg-theme-red/10 text-theme-red transition-colors hover:bg-theme-red hover:text-white"
+                    /* mt-auto, not a fixed margin: names wrap to two lines at
+                       some widths, and this keeps the icons on one line across
+                       the row instead of stepping up and down. */
+                    className="mt-auto pt-4 inline-flex h-9 w-9 items-center justify-center rounded-full bg-theme-red/10 text-theme-red transition-colors hover:bg-theme-red hover:text-white"
                   >
                     <FaLinkedin />
                   </a>

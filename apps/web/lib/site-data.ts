@@ -137,8 +137,12 @@ export const howItWorks: ProcessStep[] = [
 
 export interface Person {
   name: string;
-  // No `role`: the cards do not show titles, and each bio already says what
-  // the person does. A field nothing renders only goes stale.
+  /**
+   * NOT CURRENTLY RENDERED, AND THAT IS DELIBERATE. The team cards show only
+   * a photo, a name and a LinkedIn link right now. These bios are kept
+   * verbatim because they are going back up later — do not delete them as
+   * dead data. Restoring them is one <p> in team-section.tsx.
+   */
   bio: string;
   image: string;
   linkedin?: string;
