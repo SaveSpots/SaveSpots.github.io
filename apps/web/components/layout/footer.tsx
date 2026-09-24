@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { socials } from "@/lib/site-data";
-import { TAX_DEDUCTIBLE_NOTICE } from "@/lib/donate-config";
+import { TAX_DEDUCTIBLE_NOTICE, org } from "@/lib/donate-config";
 
 export function Footer() {
   const scrollToSection = (sectionId: string) => {
@@ -25,7 +25,7 @@ export function Footer() {
   return (
     <footer className="border-t border-white/20 py-12 px-4 bg-theme-red-dark">
       <div className="max-w-6xl mx-auto">
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
           {/* Logo */}
           <motion.div>
             <div
@@ -43,6 +43,23 @@ export function Footer() {
               <span className="text-xl font-bold text-white">SaveSpots</span>
             </div>
           </motion.div>
+
+          {/* Contact — plain, visible, copyable text rather than a "Contact us"
+              label. Someone who wants to reach a nonprofit should not have to
+              go through a form to find out how. */}
+          <div>
+            <h4 className="text-lg font-semibold mb-4 text-white" data-cursor="text">
+              Contact
+            </h4>
+            <motion.a
+              href={`mailto:${org.email}`}
+              className="inline-block text-white/90 hover:text-white transition-colors font-medium"
+              whileHover={{ scale: 1.05, x: 4 }}
+              data-cursor="button"
+            >
+              {org.email}
+            </motion.a>
+          </div>
 
           {/* Socials */}
           <div>

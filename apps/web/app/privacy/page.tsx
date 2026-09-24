@@ -1,3 +1,4 @@
+import { org } from "@/lib/donate-config";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -7,9 +8,11 @@ export const metadata: Metadata = {
 };
 
 // Plain, honest privacy policy for the SaveSpots volunteer mobile app.
-// Update the EFFECTIVE date and the contact email before publishing.
+// Update the EFFECTIVE date before publishing. The contact address comes
+// from donate-config.
 const EFFECTIVE = "July 12, 2026";
-const CONTACT = "hello@savespots.org"; // TODO: confirm the real contact address
+// Single source of truth for the org's contact address.
+const CONTACT = org.email;
 
 export default function PrivacyPage() {
   return (

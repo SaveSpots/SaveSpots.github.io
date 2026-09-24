@@ -4,6 +4,7 @@ import { motion } from "framer-motion"
 import { AnimatedSection } from "@/components/shared/animated-section"
 import { InfiniteGrid } from "@/components/layout/infinite-grid"
 import { ConsistentButton } from "@/components/shared/consistent-button"
+import { org } from "@/lib/donate-config";
 import { ContactForm } from "@/components/contact-form"
 import Link from "next/link";
 
@@ -64,13 +65,13 @@ export function ContactSection() {
                   Host a SaveBox at Your Location
                 </ConsistentButton>
               </Link>
-              <Link
-                href="mailto:contact@savespots.org"
-                className="w-full"
-                target="_blank"
-              >
+              {/* Address comes from donate-config so the site has exactly one
+                  contact address to change, not five copies to miss. The link
+                  text IS the address, so it stays readable (and copyable) in
+                  the rendered HTML rather than hiding behind a label. */}
+              <Link href={`mailto:${org.email}`} className="w-full">
                 <ConsistentButton variant="primary" className="w-full">
-                  Email: Contact@savespots.org
+                  {org.email}
                 </ConsistentButton>
               </Link>
             </motion.div>

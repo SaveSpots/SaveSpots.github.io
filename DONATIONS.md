@@ -298,7 +298,7 @@ Thank you for supporting SaveSpots. SaveSpots NFP is a tax-exempt organization
 under Section 501(c)(3) of the Internal Revenue Code (EIN 39-3700157).
 Contributions are tax-deductible to the extent allowed by law. No goods or
 services were provided in exchange for this contribution.
-Questions: savespotsinfo@gmail.com
+Questions: sameer@savespots.org
 ```
 
 That footer lands on every Square receipt, which turns each one into a valid
