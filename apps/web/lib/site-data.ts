@@ -137,7 +137,8 @@ export const howItWorks: ProcessStep[] = [
 
 export interface Person {
   name: string;
-  role: string;
+  // No `role`: the cards do not show titles, and each bio already says what
+  // the person does. A field nothing renders only goes stale.
   bio: string;
   image: string;
   linkedin?: string;
@@ -146,35 +147,30 @@ export interface Person {
 export const team: Person[] = [
   {
     name: "Sameer Ilyas",
-    role: "Co-Founder",
     bio: "Co-founder of SaveSpots. Studying public health at Vanderbilt University.",
     image: "/assets/team/sameer.jpg",
     linkedin: "https://www.linkedin.com/in/sameer-ilyas-453b5b1b5/",
   },
   {
     name: "Zuhayr Gaffoor",
-    role: "Co-Founder",
     bio: "Co-founder of SaveSpots, studying biomedical sciences.",
     image: "/assets/team/zuhayr.jpg",
     linkedin: "https://www.linkedin.com/in/zuhayr-gaffoor-6a9115276/",
   },
   {
     name: "Hammad Ansari",
-    role: "Co-Founder",
     bio: "Co-founder of SaveSpots, studying at the University of Illinois Chicago.",
     image: "/assets/team/hammad.jpg",
     linkedin: "https://www.linkedin.com/in/hammad-ansari-8a3a49308/",
   },
   {
     name: "Ali Ilyas",
-    role: "Director of Research and Fundraising",
     bio: "UT Dallas BS in Biology. An AEMT who leads research and fundraising at SaveSpots.",
     image: "/assets/team/ali.jpg",
     linkedin: "https://www.linkedin.com/in/ali-ilyas-7b002b1a3/",
   },
   {
     name: "Ishan Patel",
-    role: "Financial Manager",
     bio: "Donor outreach management at SaveSpots and biochemistry at Vanderbilt University.",
     image: "/assets/team/ishan.jpg",
     linkedin: "https://www.linkedin.com/in/ishan-patel-845043217/",

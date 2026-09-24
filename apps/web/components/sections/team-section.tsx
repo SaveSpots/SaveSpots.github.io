@@ -46,9 +46,6 @@ export function TeamSection() {
                 <h3 className="font-display text-xl font-bold text-theme-red-dark">
                   {person.name}
                 </h3>
-                <p className="mt-0.5 text-sm font-semibold text-theme-red">
-                  {person.role}
-                </p>
                 <p className="mt-3 flex-1 text-sm leading-relaxed text-gray-600">
                   {person.bio}
                 </p>
